@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>모집하기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- flatpickr CSS/JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <style>
+    .flatpickr-calendar.inline {
+      position: static !important;
+      max-width: none !important;
+      margin: 0 !important;
+      transform: scale(1) !important;
+      transform-origin: top left !important;
+    }
+    @media (min-width: 1024px) {
+      .flatpickr-calendar.inline {
+        transform: scale(1.5) !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <div class="flex flex-col items-center pt-8">
+    <!-- 로고 -->
+    <div class="mb-4">
+        <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
+            class="h-20 w-auto mx-auto" />
+    </div>
+    <!-- 로그인 상태에 따른 버튼 -->
+    <div id="nav-center" class="flex items-center space-x-2 mb-8">
+        <!-- 게스트 상태 -->
+        <div id="guest-buttons" class="flex space-x-2">
+            <a href="/login" class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]">로그인</a>
+            <a href="/register" class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600">회원가입</a>
+        </div>
+        <!-- 로그인 된 상태 -->
+        <div id="user-buttons" class="hidden flex items-center space-x-2">
+            <span id="username-display" class="text-sm font-bold text-gray-800"></span>
+            <a href="/reservations"
+                class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm">내 예약현황</a>
+            <button onclick="logout()"
+                class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm">로그아웃</button>
+        </div>
+    </div>
+</div>
+
+  <!-- 메인 컨테이너 -->
+  <main class="flex flex-col items-center p-6">
+    <h1 class="text-2xl font-bold mb-4">모집하기</h1>
+
+    <!-- 모집하기 폼 -->
+    <!-- recruitment.html (모집하기 폼 부분 예시) -->
+<section class="w-full max-w-lg bg-white p-6 rounded shadow mb-6">
+  <!-- 캘린더 섹션은 위쪽에 위치 -->
+  <section class="w-full max-w-lg bg-white p-6 rounded shadow mb-6">
+    <!-- 캘린더 섹션 -->
+    <section class="mb-6">
+      <h2 class="text-xl font-bold mb-4">날짜 선택</h2>
+      <div id="calendar"></div>
+    </section>
+  
+    <!-- 이용시간 -->
+    <div class="mb-4">
+      <label class="block font-semibold mb-1">이용시간</label>
+      <div class="flex space-x-2">
+        <select id="timeStart" class="border rounded px-2 py-1 w-1/2">
+          <option value="10:00">10:00</option>
+          <option value="10:30">10:30</option>
+          <option value="11:00">11:00</option>
+          <option value="11:30">11:30</option>
+          <option value="12:00">12:00</option>
+          <!-- 추가 옵션 -->
+        </select>
+        <span class="self-center">~</span>
+        <select id="timeEnd" class="border rounded px-2 py-1 w-1/2">
+          <option value="11:00">11:00</option>
+          <option value="11:30">11:30</option>
+          <option value="12:00">12:00</option>
+          <option value="12:30">12:30</option>
+          <option value="13:00">13:00</option>
+        <!-- 나머지 옵션들 추가 -->
+      </select>
+    </div>
+  </div>
+
+  <!-- 코트 -->
+  <div class="mb-4">
+    <label class="block font-semibold mb-1">코트</label>
+    <div class="flex space-x-4">
+      <label class="inline-flex items-center">
+        <input type="radio" name="court" value="Full" class="mr-1" checked />
+        <span>Full</span>
+      </label>
+      <label class="inline-flex items-center">
+        <input type="radio" name="court" value="Half" class="mr-1" />
+        <span>Half</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 인원 -->
+  <div class="mb-4">
+    <label class="block font-semibold mb-1">인원</label>
+    <select id="maxPlayers" class="border rounded px-2 py-1 w-full">
+      <option value="2">2명</option>
+      <option value="4">4명</option>
+      <option value="6">6명</option>
+      <option value="8">8명</option>
+    </select>
+  </div>
+
+  <!-- 메모 -->
+  <div class="mb-4">
+    <label class="block font-semibold mb-1">메모</label>
+    <textarea id="memo" class="border rounded w-full h-24 p-2" placeholder="추가 안내 내용을 입력하세요."></textarea>
+  </div>
+
+  <!-- 모집하기 버튼 -->
+  <div class="text-center">
+    <button id="recruitButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+      모집하기
+    </button>
+  </div>
+</section>
+
+
+    
+  </main>
+
+  <script>
+    // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
+    document.addEventListener("DOMContentLoaded", function () {
+            const token = localStorage.getItem("token");
+            if (token) {
+                const payload = JSON.parse(atob(token.split(".")[1]));
+                const username = payload.username;
+                document.getElementById("username-display").textContent = `${username}님!`;
+                document.getElementById("guest-buttons").classList.add("hidden");
+                document.getElementById("user-buttons").classList.remove("hidden");
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem("token");
+            alert("로그아웃 되었습니다!");
+            location.reload();
+        }
+    // flatpickr 초기화
+  flatpickr("#calendar", {
+    defaultDate: new Date(),
+    dateFormat: "Y-m-d",
+    locale: "ko",
+    inline: true,
+    disableMobile: true,
+    minDate: 'today',
+    onChange: function(selectedDates, dateStr) {
+      if (selectedDates.length > 0) {
+        // 선택한 날짜에 대해 예약된 시작 시간을 DB에서 가져와 드롭다운 업데이트
+        updateTimeDropdownFromDB(dateStr);
+      }
+    },
+  });
+
+  document.getElementById('recruitButton').addEventListener('click', function() {
+    // 폼 요소 값 읽기
+    const timeStart = document.getElementById('timeStart').value;
+    const timeEnd = document.getElementById('timeEnd').value;
+    const memo = document.getElementById('memo').value;
+    const maxPlayers = document.getElementById('maxPlayers').value;
+    const courtType = document.querySelector('input[name="court"]:checked').value;
+
+    // flatpickr 캘린더에서 선택한 날짜
+    // flatpickr 인스턴스는 지정한 요소에 _flatpickr 속성으로 접근 가능
+    const calendarInstance = document.getElementById('calendar')._flatpickr;
+    if (!calendarInstance || calendarInstance.selectedDates.length === 0) {
+      alert("날짜를 선택하세요!");
+      return;
+    }
+    const selectedDate = calendarInstance.selectedDates[0];
+    const dateStr = calendarInstance.formatDate(selectedDate, "Y-m-d");
+
+    // JWT 토큰에서 creator 정보 (예: username 사용)
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다!");
+      return;
+    }
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const creator_id = payload.username;  // 또는 user_id 값으로 대체
+
+    // POST할 데이터 구성
+    const matchData = {
+      creator_id: creator_id,
+      memo: memo,
+      date: dateStr,
+      time_start: timeStart,
+      time_end: timeEnd,
+      court_type: courtType,
+      max_players: maxPlayers
+    };
+
+    fetch('/create_match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(matchData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.match_id) {
+        alert("모집 등록 성공!");
+        // 필요에 따라 페이지 이동 또는 UI 갱신 처리
+      } else {
+        alert("등록 실패: " + data.message);
+      }
+    })
+    .catch(error => {
+      console.error("에러:", error);
+      alert("등록 중 에러 발생");
+    });
+  });
+
+  // 시작 시간 변경 시 종료 시간을 자동으로 1시간 뒤로 설정
+  document.getElementById("timeStart").addEventListener("change", function() {
+    const selectedStart = this.value;  // 예: "10:00"
+    const [hour, minute] = selectedStart.split(":").map(Number);
+    let nextHour = hour + 1;
+    // 만약 nextHour가 20시를 넘는다면 마지막 시간인 20:00으로 설정 (또는 원하는 로직 적용)
+    if(nextHour > 20) {
+      nextHour = 20;
+    }
+    // 두 자리 형식으로 변환
+    const nextHourStr = nextHour.toString().padStart(2, "0");
+    const newEndTime = `${nextHourStr}:${minute.toString().padStart(2, "0")}`;
+
+    // 종료 시간 셀렉트 요소에서 newEndTime 값이 존재하면 선택
+    const timeEndSelect = document.getElementById("timeEnd");
+    let found = false;
+    for (let option of timeEndSelect.options) {
+      if (option.value === newEndTime) {
+        timeEndSelect.value = newEndTime;
+        found = true;
+        break;
+      }
+    }
+    // 만약 해당 옵션이 없다면, 기본값으로 newEndTime을 추가할 수도 있음
+    if(!found) {
+      const newOption = document.createElement("option");
+      newOption.value = newEndTime;
+      newOption.text = newEndTime;
+      timeEndSelect.appendChild(newOption);
+      timeEndSelect.value = newEndTime;
+    }
+  });
+   // 예약된 시작 시간을 DB에서 조회하여 드롭다운 업데이트 함수
+   function updateTimeDropdownFromDB(dateStr) {
+    fetch(`/reserved_times?date=${dateStr}`)
+      .then(response => response.json())
+      .then(data => {
+        const reserved = data.reserved || [];
+        const timeStartSelect = document.getElementById("timeStart");
+        // 각 옵션을 순회하며 예약된 시간이면 disable 처리
+        for (let option of timeStartSelect.options) {
+          if (reserved.includes(option.value)) {
+            option.disabled = true;
+            option.style.display = "none"; // 혹은 단순히 disabled 속성만 줄 수도 있음
+          } else {
+            option.disabled = false;
+            option.style.display = "block";
+          }
+        }
+      })
+      .catch(err => {
+        console.error("예약된 시간 조회 실패:", err);
+      });
+  }
+  </script>
+</body>
+</html>

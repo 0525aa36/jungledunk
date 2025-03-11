@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>메인 페이지</title>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      /* Flatpickr의 inline 캘린더 스타일 오버라이드 */
+      .flatpickr-calendar.inline {
+        position: static !important;
+        max-width: none !important;
+        left: auto !important;
+        margin: 0 !important;
+        transform: scale(1) !important;
+        transform-origin: top right !important;
+      }
+      @media (min-width: 1024px) {
+        .flatpickr-calendar.inline {
+          transform: scale(1.5) !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="flex flex-col items-center min-h-screen bg-gray-100">
+    <!-- 회원가입 및 로그인 버튼 -->
+    <div class="mt-12 text-center">
+      <div class="space-x-4">
+        <a
+          href="/register"
+          class="px-6 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600"
+          >회원가입</a
+        >
+        <a
+          href="/login"
+          class="px-6 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
+          >로그인</a
+        >
+      </div>
+    </div>
+
+    <!-- 로고 최상단 배치 -->
+    <div class="w-full flex justify-center mt-6">
+      <img
+        src="{{ url_for('static', filename='jungledunk.png') }}"
+        alt="Jungle Dunk Logo"
+        class="w-48 md:w-64 lg:w-80"
+      />
+    </div>
+
+    <!-- 메인 컨테이너: 항상 좌우 배치 -->
+    <div
+      class="w-full flex flex-col lg:flex-row items-start mt-6 px-4 space-y-4 lg:space-y-0 lg:space-x-4"
+    >
+      <!-- 캘린더 영역 (모바일: 위쪽, 데스크탑: 오른쪽) -->
+      <div class="w-full lg:w-1/2 p-4 order-1 lg:order-2 lg:min-w-[600px]">
+        <div class="p-4 flex justify-center lg:justify-end">
+          <div id="calendar"></div>
+        </div>
+      </div>
+      <!-- 예약 데이터 영역 (모바일: 아래쪽, 데스크탑: 왼쪽) -->
+      <div id="data-container-wrapper" class="w-full lg:w-1/2 relative order-2 lg:order-1">
+        <div id="data-container" class="text-xl md:text-2xl font-bold p-4 border">
+          예약이 없습니다.
+        </div>
+        <!-- 고정된 + 버튼: wrapper 바로 아래, 가로 중앙 -->
+        <button
+          class="absolute bottom-0 left-1/2 transform translate-y-full -translate-x-1/2 bg-white rounded-full shadow-lg w-40 h-40 flex items-center justify-center focus:outline-none"
+          onclick="openReservationPopup()"
+        >
+          <span class="text-9xl font-bold text-blue-500">+</span>
+        </button>
+      </div>
+
+    <script>
+      const exampleData = {
+        '2025-03-11': [
+          {
+            memo: '회의실 예약',
+            date: '2025-03-11',
+            time_start: '09:00',
+            time_end: '14:30',
+            court_type: '풀코트',
+            current_players: 3,
+            max_players: 6,
+            creator_id: 1,
+            creator_name: 'Alice',
+          },
+          {
+            memo: '세미나 예약',
+            date: '2025-03-11',
+            time_start: '14:00',
+            time_end: '14:30',
+            court_type: '반코트',
+            current_players: 4,
+            max_players: 8,
+            creator_id: 2,
+            creator_name: 'Bob',
+          },
+        ],
+        '2025-03-12': [
+          {
+            memo: '스터디 모임',
+            date: '2025-03-12',
+            time_start: '11:00',
+            time_end: '14:30',
+            court_type: '반코트',
+            current_players: 2,
+            max_players: 4,
+            creator_id: 3,
+            creator_name: 'Charlie',
+          },
+        ],
+      };
+
+      function selectDate(dateStr) {
+        const dataContainer = document.getElementById('data-container');
+        const matches = exampleData[dateStr] || [];
+        if (matches.length === 0) {
+          dataContainer.innerHTML =
+          '아직 예약이 없어요.<br>예약하시려면 아래 + 버튼을 눌러주세요.';
+        } else {
+          let html = '';
+          matches.forEach((match) => {
+            html += `
+<div class="mt-6 space-y-4">
+            <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex flex-col md:flex-row md:items-center items-center">
+                <div class="flex-none text-2xl font-bold whitespace-nowrap md:pr-12">
+                  ${match.time_start} ~ ${match.time_end}
+                </div>
+                <div class="w-2/4 text-xl text-gray-700">
+                    <p>인원: ${match.current_players} / ${match.max_players}</p>
+                    <p>#${match.court_type} , #${match.memo}</p>
+                    <p class="text-xl text-gray-500">
+                        예약자: ${match.creator_name}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            `;
+          });
+          dataContainer.innerHTML = html;
+        }
+      }
+
+      // Flatpickr 초기화
+      flatpickr('#calendar', {
+        defaultDate: new Date(), // 오늘 날짜 기본 선택
+        dateFormat: 'Y-m-d', // 날짜 형식
+        locale: 'ko', // 한국어 설정
+        inline: true, // 캘린더 항상 표시
+        disableMobile: true, // 모바일 네이티브 날짜 선택기 비활성화
+        onChange: function (selectedDates, dateStr) {
+          if (selectedDates.length > 0) {
+            selectDate(dateStr);
+          }
+        },
+      });
+
+      // 초기 데이터 설정 (오늘 날짜 기준)
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayDateStr = `${yyyy}-${mm}-${dd}`;
+      selectDate(todayDateStr);
+    </script>
+  </body>
+</html>
