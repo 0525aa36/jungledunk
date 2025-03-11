@@ -1,42 +1,51 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>예약자 명단</title>
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center min-h-screen">
     <div class="w-full max-w-md p-6">
-        <!-- 상단 네비게이션 -->
-        <div class="text-right mb-4 text-gray-600">
-            <a href="#" class="hover:underline">내 예약현황</a> |
-            <span>방호석님</span> |
-            <a href="#" class="hover:underline">로그아웃</a>
-        </div>
-        <!-- 타이틀 -->
-        <div class="bg-gray-300 text-lg font-bold px-6 py-3 rounded-lg text-center">예약자 명단</div>
+      <!-- 상단 네비게이션 -->
+      <div class="text-right mb-4 text-gray-600">
+        <a href="#" class="hover:underline">내 예약현황</a> |
+        <span>방호석님</span> |
+        <a href="#" class="hover:underline">로그아웃</a>
+      </div>
+      <!-- 타이틀 -->
+      <div
+        class="bg-gray-300 text-lg font-bold px-6 py-3 rounded-lg text-center"
+      >
+        예약자 명단
+      </div>
 
-        <div class="flex justify-between items-center mt-2">
-            <p class="text-lg font-semibold text-gray-800">예약 인원</p>
-            <p class="text-lg font-semibold text-gray-800">3/6</p>
-        </div>
+      <div class="flex justify-between items-center mt-2">
+        <p class="text-lg font-semibold text-gray-800">예약 인원</p>
+        <p class="text-lg font-semibold text-gray-800">
+          {{ reservations|length }}/{{ match.max_players }}
+        </p>
+      </div>
 
-        <!-- 예약자 리스트 -->
-        <div class="mt-4 space-y-2">
-            <div class="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-lg">
-                <p class="text-sm font-medium">이름: 김현수님</p>
-                <button class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10">
-                    📞
-                </button>
-            </div>
-            <div class="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-lg">
-                <p class="text-sm font-medium">이름: 안예인님</p>
-                <button class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10">
-                    📞
-                </button>
-            </div>
+      <!-- 예약자 리스트 -->
+      <div class="mt-4 space-y-2">
+        {% for reservation in reservations %}
+        <div
+          class="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-lg"
+        >
+          <p class="text-sm font-medium">이름: {{ reservation.username }}님</p>
+          <a
+            href="tel:{{ reservation.phone }}"
+            class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10"
+          >
+            📞
+          </a>
         </div>
+        {% else %}
+        <p class="text-center text-gray-500">예약자가 없습니다.</p>
+        {% endfor %}
+      </div>
     </div>
-</body>
+  </body>
 </html>
