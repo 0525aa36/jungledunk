@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from bson import ObjectId  # ObjectId 사용
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)  # 24바이트의 랜덤한 값 생성
@@ -36,6 +36,13 @@ def show_login_page():
 def recruitment():
     return render_template('recruitment.html')
 
+@app.route('/comment' , methods=['GET'])
+def comment():
+    return render_template('comment.html')
+
+@app.route('/reservations' , methods=['GET'])
+def reservations():
+    return render_template('reservations.html')
 
 # 회원가입 API (POST)
 @app.route('/register', methods=['POST'])
@@ -151,9 +158,10 @@ def create_match():
 
     # 검증 통과 시 새로운 모집 생성
     new_match = {
+        '_id': ObjectId(),  # ObjectId를 생성하여 저장
         'creator_id': data['creator_id'],
         'memo': data['memo'],
-        'date': new_date,
+        'date': data['date'],
         'time_start': data['time_start'],
         'time_end': data['time_end'],
         'court_type': data['court_type'],
@@ -163,21 +171,21 @@ def create_match():
         'cancel_reason': '',
         'created_at': datetime.utcnow()
     }
+
     result = matches_collection.insert_one(new_match)
-    return jsonify({'message': '모집 등록 성공!', 'match_id': str(result.inserted_id)}), 201
+    return jsonify({'message': '모집 등록 성공!', 'match_id': str(new_match['_id'])}), 201
 
 @app.route('/get_matches', methods=['GET'])
 def get_matches():
-    date = request.args.get('date')  # 요청된 날짜 가져오기
+    date = request.args.get('date')
     if not date:
         return jsonify({'message': '날짜를 입력하세요.'}), 400
 
     matches = list(matches_collection.find({'date': date, 'status': '모집중'}))
-
-    # MongoDB에서 가져온 데이터를 JSON 직렬화 가능하게 변환
     matches_data = []
     for match in matches:
         matches_data.append({
+            'match_id': str(match['_id']),  # ObjectId를 문자열로 변환
             'memo': match.get('memo', ''),
             'date': match.get('date', ''),
             'time_start': match.get('time_start', ''),
@@ -188,8 +196,8 @@ def get_matches():
             'creator_id': match.get('creator_id', ''),
             'creator_name': match.get('creator_name', '알 수 없음')
         })
-
     return jsonify({'matches': matches_data}), 200
+
 
 
 # app.py 에 추가
@@ -204,6 +212,114 @@ def get_reserved_times():
     # 예약된 시작 시간을 중복 없이 추출합니다.
     reserved_times = list({match['time_start'] for match in matches})
     return jsonify({'reserved': reserved_times}), 200
+
+@app.route('/create_reservation', methods=['POST'])
+def create_reservation():
+    data = request.get_json()
+
+    # 필수 필드 확인
+    if not all(k in data for k in ['match_id', 'user_id']):
+        return jsonify({'message': '필수 필드를 입력하세요.'}), 400
+
+    match_id = str(data['match_id'])  # match_id를 문자열로 변환
+    user_id = data['user_id']
+
+    print(f"🔍 받은 match_id: {match_id} (타입: {type(match_id)})")
+
+    # match_id가 유효한 ObjectId인지 검증
+    try:
+        match_obj_id = ObjectId(match_id)
+    except Exception as e:
+        print(f"❌ match_id 변환 오류: {e}")
+        return jsonify({'message': '잘못된 match_id입니다.'}), 400
+
+    # 예약 정보 저장
+    reservations_collection = db['reservations']
+    reservation = {
+        'match_id': match_obj_id,  # ObjectId 사용
+        'user_id': user_id,
+        'reserved_at': datetime.utcnow()
+    }
+    reservations_collection.insert_one(reservation)
+
+    # 해당 매치의 current_players 1 증가
+    matches_collection.update_one(
+        {'_id': match_obj_id},  # ObjectId 사용
+        {'$inc': {'current_players': 1}}
+    )
+
+    return jsonify({'message': '예약 신청이 완료되었습니다!'}), 201
+
+
+@app.route('/add_comment', methods=['POST'])
+def add_comment():
+    data = request.get_json()
+    # 필수 필드: match_id, user_id, content
+    if not all(k in data for k in ['match_id', 'user_id', 'content']):
+        return jsonify({'message': '필수 필드를 입력하세요.'}), 400
+
+    comment = {
+        'match_id': data['match_id'],
+        'user_id': data['user_id'],
+        'content': data['content'],
+        'created_at': datetime.utcnow()
+    }
+    comments_collection = db['comments']
+    comments_collection.insert_one(comment)
+    
+    return jsonify({'message': '댓글 등록 성공!'}), 201
+
+@app.route('/get_comments', methods=['GET'])
+def get_comments():
+    match_id = request.args.get('match_id')
+    if not match_id:
+        return jsonify({'message': 'match_id를 입력하세요.'}), 400
+
+    comments_collection = db['comments']
+    comments = list(comments_collection.find({'match_id': match_id}))
+    
+    # JSON 직렬화 가능한 형식으로 변환
+    comments_data = []
+    for c in comments:
+        comments_data.append({
+            'user_id': c.get('user_id'),
+            'content': c.get('content'),
+            'created_at': c.get('created_at').isoformat()
+        })
+        
+    return jsonify({'comments': comments_data}), 200
+
+@app.route('/get_match', methods=['GET'])
+def get_match():
+    match_id = request.args.get('match_id')
+    if not match_id:
+        return jsonify({'message': 'match_id를 입력하세요.'}), 400
+
+    match = matches_collection.find_one({'_id': ObjectId(match_id)})
+    if not match:
+        return jsonify({'message': '해당 매치를 찾을 수 없습니다.'}), 404
+
+    # JSON 직렬화 가능한 형식으로 변환
+    match_data = {
+        'match_id': str(match['_id']),
+        'memo': match.get('memo', ''),
+        'date': match.get('date', ''),
+        'time_start': match.get('time_start', ''),
+        'time_end': match.get('time_end', ''),
+        'court_type': match.get('court_type', ''),
+        'current_players': match.get('current_players', 0),
+        'max_players': match.get('max_players', 0),
+        'creator_id': match.get('creator_id', ''),
+        'creator_name': match.get('creator_name', '알 수 없음')
+    }
+
+    return jsonify(match_data), 200
+
+@app.route('/get_reserved_dates', methods=['GET'])
+def get_reserved_dates():
+    """모든 예약이 있는 날짜 리스트 반환"""
+    reserved_dates = matches_collection.distinct('date', {'status': '모집중'})  # 중복 제거된 날짜 목록 가져오기
+    return jsonify({'reserved_dates': reserved_dates}), 200
 
 
 if __name__ == '__main__':
