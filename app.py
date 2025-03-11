@@ -166,6 +166,32 @@ def create_match():
     result = matches_collection.insert_one(new_match)
     return jsonify({'message': '모집 등록 성공!', 'match_id': str(result.inserted_id)}), 201
 
+@app.route('/get_matches', methods=['GET'])
+def get_matches():
+    date = request.args.get('date')  # 요청된 날짜 가져오기
+    if not date:
+        return jsonify({'message': '날짜를 입력하세요.'}), 400
+
+    matches = list(matches_collection.find({'date': date, 'status': '모집중'}))
+
+    # MongoDB에서 가져온 데이터를 JSON 직렬화 가능하게 변환
+    matches_data = []
+    for match in matches:
+        matches_data.append({
+            'memo': match.get('memo', ''),
+            'date': match.get('date', ''),
+            'time_start': match.get('time_start', ''),
+            'time_end': match.get('time_end', ''),
+            'court_type': match.get('court_type', ''),
+            'current_players': match.get('current_players', 0),
+            'max_players': match.get('max_players', 0),
+            'creator_id': match.get('creator_id', ''),
+            'creator_name': match.get('creator_name', '알 수 없음')
+        })
+
+    return jsonify({'matches': matches_data}), 200
+
+
 # app.py 에 추가
 @app.route('/reserved_times')
 def get_reserved_times():
