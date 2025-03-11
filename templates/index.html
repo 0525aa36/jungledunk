@@ -110,131 +110,66 @@
             }
         }
 
-        // 예시 데이터 (main.html에서 가져온 부분)
-        const exampleData = {
-        '2025-03-11': [
-          {
-            memo: '회의실 예약',
-            date: '2025-03-11',
-            time_start: '09:00',
-            time_end: '14:30',
-            court_type: '풀코트',
-            current_players: 3,
-            max_players: 6,
-            status: 'available',
-            creator_id: 1,
-            creator_name: 'Alice',
-          },
-          {
-            memo: '세미나 예약',
-            date: '2025-03-11',
-            time_start: '14:00',
-            time_end: '14:30',
-            court_type: '반코트',
-            current_players: 4,
-            max_players: 8,
-            status: 'available',
-            creator_id: 2,
-            creator_name: 'Bob',
-          },
-        ],
-        '2025-03-12': [
-          {
-            memo: '스터디 모임',
-            date: '2025-03-12',
-            time_start: '11:00',
-            time_end: '14:30',
-            court_type: '반코트',
-            current_players: 4,
-            max_players: 4,
-            status: 'available',
-            creator_id: 3,
-            creator_name: 'Charlie',
-          },
-          {
-            memo: '스터디 모임',
-            date: '2025-03-12',
-            time_start: '15:00',
-            time_end: '16:30',
-            court_type: '반코트',
-            current_players: 3,
-            max_players: 4,
-            status: 'available',
-            creator_id: 3,
-            creator_name: 'Charlie',
-          },
-        ],
-      };
+        
 
         function selectDate(dateStr) {
-            const dataContainer = document.getElementById('data-container');
-            let matches = exampleData[dateStr] || [];
+    const dataContainer = document.getElementById('data-container');
+    
+    fetch(`/get_matches?date=${dateStr}`)
+        .then(response => response.json())
+        .then(data => {
+            let matches = data.matches || [];
 
-            // 오늘 날짜 문자열 (YYYY-MM-DD)
-            const todayObj = new Date();
-            const yyyy = todayObj.getFullYear();
-            const mm = String(todayObj.getMonth() + 1).padStart(2, '0');
-            const dd = String(todayObj.getDate()).padStart(2, '0');
-            const todayStr = `${yyyy}-${mm}-${dd}`;
-
-            // 만약 선택된 날짜가 오늘이면 현재 시간과 종료시간을 비교하여 status 업데이트
-            if (dateStr === todayStr) {
-                const currentTime = todayObj.getHours() * 60 + todayObj.getMinutes(); // 분 단위
-                matches.forEach((match) => {
-                    const [endHour, endMinute] = match.time_end.split(':').map(Number);
-                    const matchEndTime = endHour * 60 + endMinute;
-                    if (currentTime > matchEndTime) {
-                        match.status = 'passed';
-                    }
-                });
-            }
-
-            // status가 available인 예약만 표시
-            matches = matches.filter((match) => match.status === 'available');
-
+            // (필요하다면 현재 시간 비교 등 추가 로직 삽입 가능)
             if (matches.length === 0) {
                 dataContainer.innerHTML =
                     '아직 예약이 없어요.<br>예약하시려면 아래 + 버튼을 눌러주세요.';
             } else {
                 let html = '';
                 matches.forEach((match) => {
-                    // 현재 인원과 최대 인원이 같은지 확인
+                    // 인원 가득 찼는지 확인
                     const isFull = match.current_players === match.max_players;
                     html += `
-    <div class="mt-6 space-y-4">
-      <button onclick="navigateIfLoggedIn('/reservations')"
-        class="w-full text-left relative ${isFull ? 'opacity-50 cursor-not-allowed' : ''
-                        }"
-        ${isFull ? 'disabled' : ''}>
-        ${isFull
-                            ? `<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-xl font-bold">이미 마감.</div>`
-                            : ''
-                        }
-        <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex flex-col md:flex-row md:items-center items-center">
-          <div class="flex-none text-2xl font-bold whitespace-nowrap md:pr-12">
-            ${match.time_start} ~ ${match.time_end}
-          </div>
-          <div class="w-2/4 text-xl text-gray-700">
-            <p>인원: ${match.current_players} / ${match.max_players}</p>
-            <p>#${match.court_type} , #${match.memo}</p>
-            <p class="text-xl text-gray-500">예약자: ${match.creator_name}</p>
-          </div>
-        </div>
-      </button>
-    </div>
-            `;
+                        <div class="mt-6 space-y-4">
+                          <button onclick="navigateIfLoggedIn('/reservations')"
+                            class="w-full text-left relative ${isFull ? 'opacity-50 cursor-not-allowed' : ''}"
+                            ${isFull ? 'disabled' : ''}>
+                            ${isFull
+                                ? `<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-xl font-bold">이미 마감.</div>`
+                                : ''
+                            }
+                            <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex flex-col md:flex-row md:items-center items-center">
+                              <div class="flex-none text-2xl font-bold whitespace-nowrap md:pr-12">
+                                ${match.time_start} ~ ${match.time_end}
+                              </div>
+                              <div class="w-2/4 text-xl text-gray-700">
+                                <p>인원: ${match.current_players} / ${match.max_players}</p>
+                                <p>#${match.court_type} , #${match.memo}</p>
+                                <p class="text-xl text-gray-500">예약자: ${match.creator_id}</p>
+                              </div>
+                            </div>
+                          </button>
+                        </div>
+                    `;
                 });
                 dataContainer.innerHTML = html;
             }
-        }
+        })
+        .catch(error => {
+            console.error("예약 데이터를 불러오는 중 오류 발생:", error);
+            dataContainer.innerHTML = '데이터를 불러오는 중 오류가 발생했습니다.';
+        });
+}
 
-        // flatpickr 초기화 (main.html에서 가져온 부분)
+
+
+        // flatpickr 초기화
         flatpickr("#calendar", {
-            defaultDate: new Date(), // 오늘 날짜 기본 선택
-            dateFormat: "Y-m-d",     // 날짜 형식
-            locale: "ko",           // 한국어 설정
-            inline: true,           // 캘린더 항상 표시
-            disableMobile: true,    // 모바일 네이티브 날짜 선택기 비활성화
+            defaultDate: new Date(),
+            dateFormat: "Y-m-d",
+            locale: "ko",
+            inline: true,
+            disableMobile: true,
             minDate: 'today',
             onChange: function (selectedDates, dateStr) {
                 if (selectedDates.length > 0) {
