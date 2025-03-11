@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function openPopup(reservationId) {
+            document.getElementById('popup').classList.remove('hidden');
+            document.getElementById('confirmDelete').setAttribute('data-id', reservationId);
+        }
+        
+        function closePopup() {
+            document.getElementById('popup').classList.add('hidden');
+            document.getElementById('deleteReason').value = ""; // 입력 초기화
+        }
+        
+        function deleteReservation() {
+            let reason = document.getElementById('deleteReason').value;
+            if (reason.trim() === "") {
+                alert("삭제 사유를 입력해주세요.");
+                return;
+            }
+
+            // 삭제 사유를 다음 팝업에 전달
+            document.getElementById('deleteReasonText').innerText = reason;
+            
+            // 삭제 확인 팝업 닫고 삭제 완료 팝업 열기
+            closePopup();
+            openConfirmPopup();
+        }
+        
+        function openConfirmPopup() {
+            document.getElementById('confirmPopup').classList.remove('hidden');
+        }
+        
+        function closeConfirmPopup() {
+            document.getElementById('confirmPopup').classList.add('hidden');
+        }
+
+        function openCancelPopup(reservationId) {
+            document.getElementById('cancelPopup').classList.remove('hidden');
+            document.getElementById('confirmCancel').setAttribute('data-id', reservationId);
+        }
+        
+        function closeCancelPopup() {
+            document.getElementById('cancelPopup').classList.add('hidden');
+        }
+
+    </script>
+</head>
+
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+    <div class="w-full max-w-md p-6">
+        <!-- 상단 네비게이션 -->
+        <div class="text-right mb-4 text-gray-600">
+            <span>방호석님</span> |
+            <a href="#" class="hover:underline">로그아웃</a>
+        </div>
+
+        <!-- 타이틀 -->
+        <div class="bg-gray-300 text-lg font-bold px-6 py-3 rounded-lg text-center">내 예약현황</div>
+
+        <!-- 예약 리스트 -->
+        <div class="mt-6 space-y-4">
+            <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
+                <div class="w-1/4 text-left">
+                    <p class="text-lg font-semibold text-gray-800">10:00 ~ 11:30</p>
+                </div>
+                <div class="w-2/4 text-sm text-gray-700">
+                    <p>인원 : 3/6</p>
+                    <p>#Full #먹고음료내기</p>
+                    <p class="text-xs text-gray-500">예약자: 방호석</p>
+                </div>
+                <div class="w-1/4 flex flex-col items-end space-y-2">
+                    <button onclick="openPopup(1)" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition focus:outline-none">삭제하기</button>
+                    <a href="#" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition focus:outline-none whitespace-nowrap">예약자명단</a>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
+                <div class="w-1/4 text-left">
+                    <p class="text-lg font-semibold text-gray-800">12:00 ~ 13:00</p>
+                </div>
+                <div class="w-2/4 text-sm text-gray-700">
+                    <p>인원 : 3/6</p>
+                    <p>#Half #먹고음료내기</p>
+                    <p class="text-xs text-gray-500">예약자: 김현수</p>
+                </div>
+                <div class="w-1/4 flex justify-end">
+                    <button onclick="openCancelPopup(2)" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition focus:outline-none whitespace-nowrap">취소하기</button>
+                </div>
+            </div>
+        </div>      
+    </div>
+
+
+
+    <!-- 삭제 확인 팝업 -->
+    <div id="popup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <p class="text-lg font-semibold">정말 삭제하시겠습니까?</p>
+            <textarea id="deleteReason" class="w-full border rounded-lg p-2 mt-2" placeholder="삭제 사유를 입력하세요..."></textarea>
+            <div class="mt-4 flex justify-center space-x-4">
+                <button id="confirmDelete" onclick="deleteReservation()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">확인</button>
+                <button onclick="closePopup()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 transition">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 삭제 완료 팝업 -->
+    <div id="confirmPopup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <p class="text-lg font-semibold">삭제되었습니다.</p>
+            <p class="text-sm text-gray-600 mt-2">삭제 사유:</p>
+            <p id="deleteReasonText" class="text-sm text-gray-800 font-medium mt-1"></p>
+            <div class="mt-4 flex justify-center">
+                <button onclick="closeConfirmPopup()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 예약 취소 팝업 -->
+    <div id="cancelPopup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <p class="text-lg font-semibold">정말 예약을 취소하시겠습니까?</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <button id="confirmCancel" onclick="closeCancelPopup()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">확인</button>
+                <button onclick="closeCancelPopup()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 transition">취소</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
