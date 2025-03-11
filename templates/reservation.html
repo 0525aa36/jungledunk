@@ -6,16 +6,34 @@
     <title>예약 시스템</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = localStorage.getItem("token");
+
+            if (token) {
+                const payload = JSON.parse(atob(token.split(".")[1])); // JWT 토큰 디코딩
+                const username = payload.username;
+
+                // 로그인된 사용자 이름을 네비게이션에 반영
+                document.getElementById("user-name").textContent = `${username}님`;
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem("token");  // JWT 토큰 삭제
+            alert("로그아웃 되었습니다!");
+            window.location.href = "/";  // index.html로 이동
+        }
+
         function openPopup(reservationId) {
             document.getElementById('popup').classList.remove('hidden');
             document.getElementById('confirmDelete').setAttribute('data-id', reservationId);
         }
-        
+
         function closePopup() {
             document.getElementById('popup').classList.add('hidden');
             document.getElementById('deleteReason').value = ""; // 입력 초기화
         }
-        
+
         function deleteReservation() {
             let reason = document.getElementById('deleteReason').value;
             if (reason.trim() === "") {
@@ -25,16 +43,16 @@
 
             // 삭제 사유를 다음 팝업에 전달
             document.getElementById('deleteReasonText').innerText = reason;
-            
+
             // 삭제 확인 팝업 닫고 삭제 완료 팝업 열기
             closePopup();
             openConfirmPopup();
         }
-        
+
         function openConfirmPopup() {
             document.getElementById('confirmPopup').classList.remove('hidden');
         }
-        
+
         function closeConfirmPopup() {
             document.getElementById('confirmPopup').classList.add('hidden');
         }
@@ -43,11 +61,10 @@
             document.getElementById('cancelPopup').classList.remove('hidden');
             document.getElementById('confirmCancel').setAttribute('data-id', reservationId);
         }
-        
+
         function closeCancelPopup() {
             document.getElementById('cancelPopup').classList.add('hidden');
         }
-
     </script>
 </head>
 
@@ -55,8 +72,8 @@
     <div class="w-full max-w-md p-6">
         <!-- 상단 네비게이션 -->
         <div class="text-right mb-4 text-gray-600">
-            <span>방호석님</span> |
-            <a href="#" class="hover:underline">로그아웃</a>
+            <span id="user-name"></span> |
+            <a href="#" class="hover:underline" onclick="logout()">로그아웃</a>
         </div>
 
         <!-- 타이틀 -->
@@ -71,7 +88,7 @@
                 <div class="w-2/4 text-sm text-gray-700">
                     <p>인원 : 3/6</p>
                     <p>#Full #먹고음료내기</p>
-                    <p class="text-xs text-gray-500">예약자: 방호석</p>
+                    <p class="text-xs text-gray-500">예약자: 김현수</p>
                 </div>
                 <div class="w-1/4 flex flex-col items-end space-y-2">
                     <button onclick="openPopup(1)" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition focus:outline-none">삭제하기</button>
@@ -94,8 +111,6 @@
             </div>
         </div>      
     </div>
-
-
 
     <!-- 삭제 확인 팝업 -->
     <div id="popup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
