@@ -91,14 +91,14 @@ def register():
 
     # 회원가입 성공 후 자동 로그인 (JWT 토큰 생성)
     payload = {
-        'username': username,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    'username': user['username'],
+    'user_id': str(user['_id']),  # 사용자의 _id를 문자열로 포함
+    'exp': datetime.utcnow() + timedelta(hours=1)
     }
     token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
     return jsonify({'message': '회원가입 성공!', 'token': token}), 201
 
-# 로그인 API (POST)
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -118,12 +118,12 @@ def login():
     if not check_password_hash(user['password'], password):
         return jsonify({'message': '이메일 또는 비밀번호가 올바르지 않습니다!'}), 401
 
-    # 로그인 성공 시 JWT 토큰 생성
-    # 여기서 'username'을 payload에 담아준다.
+    # 로그인 성공 시 JWT 토큰 생성 (사용자의 _id도 포함)
     payload = {
-    'username': user['username'],
-    'exp': datetime.utcnow() + timedelta(hours=1)
-}
+        'username': user['username'],
+        'user_id': str(user['_id']),
+        'exp': datetime.utcnow() + timedelta(hours=1)
+    }
     token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
     return jsonify({'message': '로그인 성공!', 'token': token}), 200
@@ -347,11 +347,11 @@ def my_reservations():
         return jsonify({'message': '유효하지 않은 토큰입니다.', 'error': str(e)}), 401
 
     # 토큰 payload에 포함된 username을 이용해 사용자 정보 조회
-    username = payload.get('username')
-    if not username:
-        return jsonify({'message': '토큰 payload에 username이 없습니다.'}), 401
+    user_id = payload.get('user_id')
+    if not user_id:
+        return jsonify({'message': '토큰 payload에 user_id이 없습니다.'}), 401
 
-    user = users_collection.find_one({'username': username})
+    user = users_collection.find_one({'_id': ObjectId(user_id)})
     if not user:
         return jsonify({'message': '사용자를 찾을 수 없습니다.'}), 404
 
@@ -368,6 +368,55 @@ def my_reservations():
                 'match': match
             })
     return render_template('reservation.html', reservations=reservations, current_user_id=current_user_id)
+
+@app.route('/api/reservations', methods=['GET'])
+def api_reservations():
+    # 클라이언트가 AJAX 요청 시, Authorization 헤더에 토큰을 설정하도록 합니다.
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({'message': 'Authorization header가 필요합니다.'}), 401
+
+    try:
+        token = auth_header.split(" ")[1]
+        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    except Exception as e:
+        return jsonify({'message': '유효하지 않은 토큰입니다.', 'error': str(e)}), 401
+
+    # JWT 토큰에서 user_id를 추출하고, _id 필드로 조회합니다.
+    user_id = payload.get('user_id')
+    if not user_id:
+        return jsonify({'message': '토큰 payload에 user_id가 없습니다.'}), 401
+
+    try:
+        user = users_collection.find_one({'_id': ObjectId(user_id)})
+    except Exception as e:
+        return jsonify({'message': '사용자 조회 오류', 'error': str(e)}), 500
+
+    if not user:
+        return jsonify({'message': '사용자를 찾을 수 없습니다.'}), 404
+
+    current_user_id = str(user['_id'])
+    my_reservations_cursor = reservations_collection.find({'user_id': current_user_id})
+    reservations_data = []
+    for res in my_reservations_cursor:
+        match = matches_collection.find_one({'_id': ObjectId(res['match_id'])})
+        if match:
+            reservations_data.append({
+                'reservation_id': str(res['_id']),
+                'match': {
+                    'time_start': match.get('time_start', ''),
+                    'time_end': match.get('time_end', ''),
+                    'court_type': match.get('court_type', ''),
+                    'memo': match.get('memo', ''),
+                    'current_players': match.get('current_players', 0),
+                    'max_players': match.get('max_players', 0),
+                    'creator_id': match.get('creator_id', ''),
+                    '_id': str(match['_id'])
+                }
+            })
+    return jsonify({'reservations': reservations_data, 'current_user_id': current_user_id}), 200
+
+
 
 # 예약자 목록 조회
 @app.route('/player_list/<match_id>')
@@ -439,7 +488,7 @@ def cancel_match(match_id):
         "감사합니다."
     )
 
-    try
+    try:
         msg = Message(subject, recipients=recipient_emails)
         msg.body = body
         mail.send(msg)
@@ -449,7 +498,7 @@ def cancel_match(match_id):
     return jsonify({'message': '모집글 취소 및 이메일 전송 성공!'}), 200
 
  # 참여자 예약 취소
- @app.route('/cancel_reservation/<reservation_id>', methods=['POST'])
+@app.route('/cancel_reservation/<reservation_id>', methods=['POST'])
 def cancel_reservation(reservation_id):
     # 예약 id로 예약 정보 조회
     reservation = reservations_collection.find_one({'_id': ObjectId(reservation_id)})

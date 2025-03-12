@@ -110,45 +110,36 @@
         }
 
         // 예약 신청 함수 (신청 버튼 클릭 시 실행)
-        function applyMatch(matchId, currentParticipants, maxParticipants) {
-            console.log("✅ applyMatch() 호출됨! matchId:", matchId, "타입:", typeof matchId);
+        // 예약 신청 함수
+function applyMatch(matchId, currentParticipants, maxParticipants) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
 
-            if (!matchId) {
-                alert("❌ matchId가 없습니다.");
-                return;
-            }
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const user_id = payload.user_id;  // _id 값을 사용
 
-            if (currentParticipants >= maxParticipants) {
-                openFullPopup();
-            } else {
-                const token = localStorage.getItem("token");
-                if (!token) {
-                    window.location.href = '/login';
-                    return;
-                }
-
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const user_id = payload.username;  // JWT에서 username 추출
-
-                fetch('/create_reservation', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ match_id: String(matchId), user_id: user_id }) // match_id를 문자열로 변환하여 전송
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.message === '예약 신청이 완료되었습니다!') {
-                            openSuccessPopup();
-                            loadMatchDetails();  // 예약 인원 업데이트
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error("❌ 예약 신청 중 오류 발생:", error);
-                    });
-            }
+    fetch('/create_reservation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ match_id: String(matchId), user_id: user_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === '예약 신청이 완료되었습니다!') {
+            openSuccessPopup();
+            loadMatchDetails();  // 예약 인원 업데이트
+        } else {
+            alert(data.message);
         }
+    })
+    .catch(error => {
+        console.error("예약 신청 중 오류 발생:", error);
+    });
+}
+
 
 
 
