@@ -309,7 +309,11 @@ def get_match():
     if not match_id:
         return jsonify({'message': 'match_id를 입력하세요.'}), 400
 
-    match = matches_collection.find_one({'_id': ObjectId(match_id)})
+    try:
+        match = matches_collection.find_one({'_id': ObjectId(match_id)})
+    except Exception as e:
+        return jsonify({'message': '잘못된 match_id입니다.', 'error': str(e)}), 400
+
     if not match:
         return jsonify({'message': '해당 매치를 찾을 수 없습니다.'}), 404
 
@@ -323,11 +327,12 @@ def get_match():
         'court_type': match.get('court_type', ''),
         'current_players': match.get('current_players', 0),
         'max_players': match.get('max_players', 0),
-        'creator_id': match.get('creator_id', ''),
+        'creator_id': str(match.get('creator_id', '')),  # 수정된 부분
         'creator_name': match.get('creator_name', '알 수 없음')
     }
 
     return jsonify(match_data), 200
+
 
 @app.route('/get_reserved_dates', methods=['GET'])
 def get_reserved_dates():
@@ -367,7 +372,8 @@ def my_reservations():
     reservations = []
     
     for res in my_reservations_cursor:
-        match = matches_collection.find_one({'_id': ObjectId(res['creator_id'])})
+    # match_id를 사용하여 해당 매치 정보를 조회합니다.
+        match = matches_collection.find_one({'_id': ObjectId(res['match_id'])})
         if match:
             # creator_id로 예약자의 username 찾기
             creator = users_collection.find_one({'_id': match['creator_id']})
@@ -383,7 +389,7 @@ def my_reservations():
                     'current_players': match.get('current_players', 0),
                     'max_players': match.get('max_players', 0),
                     'creator_id': str(match['creator_id']),
-                    'creator_name': creator_name,  # ✅ 예약자의 이름 추가
+                    'creator_name': creator_name,
                     '_id': str(match['_id'])
                 }
             })
