@@ -410,6 +410,12 @@
           .then((response) => response.json())
           .then((data) => {
             console.log('예약 데이터 응답:', data);
+            // 로딩 팝업 숨기기
+            document.getElementById('loadingPopup').classList.add('hidden');
+            // 삭제 완료 팝업에 삭제 사유 표시
+            document.getElementById('deleteReasonText').textContent = reason;
+            // 완료 팝업 호출
+            openConfirmPopup();
             reservationsData = data.reservations || [];
             currentUserId = data.current_user_id;
             currentPage = 1;
