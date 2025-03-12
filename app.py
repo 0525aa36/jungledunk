@@ -491,11 +491,10 @@ def player_list(match_id):
 
     return render_template('player_list.html', reservations=reservations, match=match)
 
-    # 모집자가 매치를 취소
 @app.route('/cancel_match/<match_id>', methods=['POST'])
 def cancel_match(match_id):
-    # 삭제 사유를 폼 데이터나 JSON으로부터 받아옴
-    data = request.get_json()  # JSON 요청으로 받는다고 가정
+    # JSON 요청으로 취소 사유 받기
+    data = request.get_json()
     cancellation_reason = data.get('reason') if data else None
     if not cancellation_reason:
         return jsonify({'message': '취소 사유를 입력하세요.'}), 400
@@ -506,45 +505,25 @@ def cancel_match(match_id):
     except Exception as e:
         return jsonify({'message': '유효하지 않은 match_id입니다.'}), 400
 
-    # 업데이트 전에 현재 상태를 확인 (디버그용)
-    match_before = matches_collection.find_one({'_id': match_obj_id})
-    print("Before update, match status:", match_before.get('status', '없음'))
+    # 삭제할 매치 조회
+    match = matches_collection.find_one({'_id': match_obj_id})
+    if not match:
+        return jsonify({'message': '해당 매치를 찾을 수 없습니다.'}), 404
 
-    # 모집글 상태 업데이트: status를 "cancelled"로 변경
-    update_result = matches_collection.update_one(
-        {'_id': match_obj_id},
-        {'$set': {
-            'status': 'cancelled', 
-            'cancel_reason': cancellation_reason, 
-            'cancelled_at': datetime.utcnow()
-        }}
-    )
-    print("Update result modified_count:", update_result.modified_count)
-
-    if update_result.modified_count == 0:
-        return jsonify({'message': '모집글 취소 업데이트 실패'}), 400
-
-    # 매치에 신청한 예약(참여자)들을 조회합니다.
+    # 해당 매치에 신청한 모든 예약 조회 및 참여자 이메일 수집
     reservations = list(reservations_collection.find({'match_id': match_obj_id}))
-    if not reservations:
-        return jsonify({'message': '신청한 사람이 없습니다.'}), 200
-
-    # 참여자들의 이메일을 수집합니다.
     recipient_emails = []
     for reservation in reservations:
         user = users_collection.find_one({'_id': ObjectId(reservation['user_id'])})
         if user and user.get('email'):
             recipient_emails.append(user['email'])
 
-    if not recipient_emails:
-        return jsonify({'message': '신청자 이메일 정보를 찾을 수 없습니다.'}), 400
-
     # 이메일 내용 구성
     subject = "예약 취소 안내"
     body = (
         f"안녕하세요,\n\n"
-        f"고객님께서 신청하신 예약이 취소되었습니다.\n"
-        f"모집자 취소 사유: {cancellation_reason}\n\n"
+        f"모집자가 예약을 삭제하였습니다.\n"
+        f"삭제 사유: {cancellation_reason}\n\n"
         "불편을 드려 죄송합니다.\n"
         "감사합니다."
     )
@@ -554,10 +533,18 @@ def cancel_match(match_id):
         msg.body = body
         mail.send(msg)
     except Exception as e:
-        print("메일 전송 중 오류:", str(e))  # 콘솔에 상세 오류 출력
+        print("메일 전송 중 오류:", str(e))
         return jsonify({'message': '이메일 전송 실패', 'error': str(e)}), 500
 
-    return jsonify({'message': '모집글 취소 및 이메일 전송 성공!'}), 200
+    # DB에서 해당 매치와 그 매치에 속한 모든 예약 삭제
+    match_delete_result = matches_collection.delete_one({'_id': match_obj_id})
+    reservations_delete_result = reservations_collection.delete_many({'match_id': match_obj_id})
+
+    return jsonify({
+        'message': '모집글 삭제 및 이메일 전송 성공!',
+        'match_deleted': match_delete_result.deleted_count,
+        'reservations_deleted': reservations_delete_result.deleted_count
+    }), 200
 
     # 참여자 예약 취소
 @app.route('/cancel_reservation/<reservation_id>', methods=['POST'])
