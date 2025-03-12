@@ -11,7 +11,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)  # 24바이트의 랜덤한 값 생성
 
 # MongoDB 연결 (MongoDB 서버가 로컬에서 실행 중이어야 함)
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://localhost',27017)
 db = client['user_database']
 users_collection = db['users'] 
 matches_collection = db['matches']
@@ -587,6 +587,23 @@ def cancel_reservation(reservation_id):
         )
 
     return jsonify({'message': '예약 취소 성공!'}), 200
+
+@app.route('/is_joined', methods=['GET'])
+def is_joined():
+    match_id = request.args.get('match_id')
+    user_id = request.args.get('user_id')
+    if not match_id or not user_id:
+        return jsonify({'message': 'match_id와 user_id가 필요합니다.'}), 400
+    try:
+        reservation = reservations_collection.find_one({
+            'match_id': ObjectId(match_id),
+            'user_id': ObjectId(user_id)
+        })
+        joined = reservation is not None
+        return jsonify({'joined': joined}), 200
+    except Exception as e:
+        return jsonify({'message': '예약 확인 중 오류 발생', 'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':

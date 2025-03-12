@@ -44,21 +44,25 @@
         <!-- 🔹 반응형 적용: 데스크탑에서 중앙 정렬 -->
         <section class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mx-auto">
             <div class="mb-4 text-center md:text-left">
+                <!-- 매치 날짜 추가 -->
+                <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
+                    📅 <span id="matchDate">YYYY-MM-DD</span>
+                </div>
                 <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
                     ⏰ <span id="matchTime">00:00 ~ 00:00</span>
                 </div>
-                <div class="w-2/4 text-base text-gray-700 ml-4 text-left">
+                <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
                     <p class="font-semibold">👥 인원: <span id="matchParticipants">0 / 0</span></p>
                     <p class="text-gray-600">🏀 <span id="matchMemo">#매치 정보</span></p>
-                    <p class="text-sm text-gray-500 font-medium">📌 예약자: <span id="matchCreator">관리자</span></p>
+                    <p class="text-gray-600">📌 예약자: <span id="matchCreator">관리자</span></p>
                 </div>
             </div>
+            
             <!-- 🔹 신청하기 버튼을 가운데 정렬 & 크기 자동 조정 -->
             <div class="flex justify-center">
-                <button id="applyButton" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
-                        w-full sm:w-auto min-w-[80px] max-w-[110px]">
+                <button id="applyButton" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-auto">
                     신청하기
-                </button>
+                  </button>
             </div>
         </section>
 
@@ -243,49 +247,49 @@
 
         // 특정 매치 정보를 불러와 화면에 표시
         function loadMatchDetails() {
-            const matchId = getMatchIdFromUrl();
-            if (!matchId) {
-                alert("잘못된 접근입니다. match_id가 없습니다.");
+    const matchId = getMatchIdFromUrl();
+    if (!matchId) {
+        alert("잘못된 접근입니다. match_id가 없습니다.");
+        return;
+    }
+
+    fetch(`/get_match?match_id=${matchId}`)
+        .then(response => response.json())
+        .then(match => {
+            if (match.message) {
+                alert(match.message);
                 return;
             }
 
-            fetch(`/get_match?match_id=${matchId}`)
-                .then(response => response.json())
-                .then(match => {
-                    if (match.message) {
-                        alert(match.message);
-                        return;
-                    }
+            // HTML 요소 업데이트
+            document.getElementById("matchDate").innerText = match.date; // 추가된 부분
+            document.getElementById("matchTime").innerText = `${match.time_start} ~ ${match.time_end}`;
+            document.getElementById("matchParticipants").innerHTML = `<span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
+            document.getElementById("matchMemo").innerText = `#${match.court_type} #${match.memo}`;
+            document.getElementById("matchCreator").innerText = match.creator_name;
 
-                    // HTML 요소 업데이트
-                    document.getElementById("matchTime").innerText = `${match.time_start} ~ ${match.time_end}`;
-                    document.getElementById("matchParticipants").innerHTML = ` <span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
-                    document.getElementById("matchMemo").innerText = `#${match.court_type} #${match.memo}`;
-                    // 추가: 예약자(매치를 만든 사람)의 이름 업데이트
-                    document.getElementById("matchCreator").innerText = match.creator_name;
+            // JWT 토큰에서 현재 사용자 정보 추출
+            const token = localStorage.getItem("token");
+            let currentUserId = null;
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                currentUserId = payload.user_id;
+            }
 
-                    // JWT 토큰에서 현재 사용자 정보 추출
-                    const token = localStorage.getItem("token");
-                    let currentUserId = null;
-                    if (token) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        currentUserId = payload.user_id;
-                    }
-
-                    const applyButton = document.getElementById("applyButton");
-                    if (currentUserId && match.creator_id === currentUserId) {
-                        // 매치 생성자라면 신청하기 버튼 숨김
-                        applyButton.style.display = "none";
-                    } else {
-                        // 다른 사용자는 신청 가능하도록 버튼 활성화
-                        applyButton.style.display = "block";
-                        applyButton.setAttribute("onclick", `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`);
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ 매치 데이터를 불러오는 중 오류 발생:", error);
-                });
-        }
+            const applyButton = document.getElementById("applyButton");
+            if (currentUserId && match.creator_id === currentUserId) {
+                // 매치 생성자라면 신청하기 버튼 숨김
+                applyButton.style.display = "none";
+            } else {
+                // 다른 사용자는 신청 가능하도록 버튼 활성화
+                applyButton.style.display = "block";
+                applyButton.setAttribute("onclick", `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`);
+            }
+        })
+        .catch(error => {
+            console.error("❌ 매치 데이터를 불러오는 중 오류 발생:", error);
+        });
+}
 
 
 
