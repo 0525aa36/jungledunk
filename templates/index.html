@@ -34,9 +34,12 @@
     <div class="flex flex-col items-center pt-8">
         <!-- 로고 -->
         <div class="mb-4">
-            <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-                class="h-20 w-auto mx-auto" />
+            <a href="/">
+                <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
+                    class="h-20 w-auto mx-auto" />
+            </a>
         </div>
+
         <!-- 로그인 상태에 따른 버튼 -->
         <div id="nav-center" class="flex items-center space-x-2 mb-8">
             <!-- 게스트 상태 -->
@@ -58,175 +61,180 @@
     <!-- 메인 컨테이너: 좌우 배치 (main.html에서 가져옴) -->
     <div class="w-full flex flex-col lg:flex-row items-start px-4 space-y-4 lg:space-y-0 lg:space-x-4">
         <!-- 예약 데이터 영역 (왼쪽) -->
-        <div id="data-container-wrapper"
-            class="w-full lg:w-1/2 relative order-2 lg:order-1 bg-white p-4 border shadow rounded">
+        <div id="data-container-wrapper" class="w-full lg:w-1/2 relative order-2 lg:order-1 bg-gray p-4 ">
             <div id="data-container" class="text-xl md:text-2xl font-bold">
                 예약이 없습니다.
             </div>
             <!-- 고정된 + 버튼 -->
-            <button
-                class="absolute bottom-0 left-1/2 transform translate-y-full -translate-x-1/2 bg-white rounded-full shadow-lg w-20 h-20 flex items-center justify-center focus:outline-none"
+            <button class="fixed bottom-8 right-8 bg-orange-500 text-white rounded-full shadow-lg 
+               hover:bg-blue-600 w-16 h-16 flex items-center justify-center text-5xl font-bold leading-none"
                 onclick="navigateIfLoggedIn('/recruitment')">
-                <span class="text-5xl font-bold text-blue-500">+</span>
+                <span class="translate-y-[-5px]">+</span>
             </button>
         </div>
 
         <!-- 캘린더 영역 (오른쪽) -->
-        <div class="w-full lg:w-1/2 p-4 order-1 lg:order-2 lg:min-w-[600px]">
-            <div class="p-4 flex justify-center lg:justify-end">
+        <div class="w-full lg:w-1/2 p-4 order-1 lg:order-2 lg:min-w-[400px]">
+            <div class="p-4 flex justify-center lg:justify-end transform -translate-y-20">
                 <div id="calendar"></div>
             </div>
         </div>
-    </div>
 
-    <!-- 아래쪽 여백 -->
-    <div class="mb-12"></div>
+        <!-- 아래쪽 여백 -->
+        <div class="mb-12"></div>
 
-    <script>
-        // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
-        document.addEventListener("DOMContentLoaded", function () {
-            const token = localStorage.getItem("token");
-            if (token) {
-                const payload = JSON.parse(atob(token.split(".")[1]));
-                const username = payload.username;
-                document.getElementById("username-display").textContent = `${username}님!`;
-                document.getElementById("guest-buttons").classList.add("hidden");
-                document.getElementById("user-buttons").classList.remove("hidden");
-            }
-        });
-
-        function logout() {
-            localStorage.removeItem("token");
-            alert("로그아웃 되었습니다!");
-            location.reload();
-        }
-        // 로그인 여부에 따라 targetUrl 또는 /login으로 이동하는 함수
-        function navigateIfLoggedIn(targetUrl) {
-            const token = localStorage.getItem('token');
-            if (token) {
-                window.location.href = targetUrl;
-            } else {
-                window.location.href = '/login';
-            }
-        }
-
-
-
-        function selectDate(dateStr) {
-    const dataContainer = document.getElementById('data-container');
-
-    fetch(`/get_matches?date=${dateStr}`)
-        .then(response => response.json())
-        .then(data => {
-            let matches = data.matches || [];
-
-            // 현재 시간 기준으로 아직 진행 중(또는 시작 전)인 매치만 필터링
-            const now = new Date();
-            matches = matches.filter(match => {
-                // match.date는 "YYYY-MM-DD", match.time_end는 "HH:MM" 형식이라고 가정
-                const matchEndDateTime = new Date(match.date + ' ' + match.time_end);
-                // 현재 시간이 matchEndDateTime보다 작거나 같으면 아직 진행중인 매치
-                return matchEndDateTime >= now;
+        <script>
+            // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
+            document.addEventListener("DOMContentLoaded", function () {
+                const token = localStorage.getItem("token");
+                if (token) {
+                    const payload = JSON.parse(atob(token.split(".")[1]));
+                    const username = payload.username;
+                    document.getElementById("username-display").textContent = `${username}님!`;
+                    document.getElementById("guest-buttons").classList.add("hidden");
+                    document.getElementById("user-buttons").classList.remove("hidden");
+                }
             });
 
-            if (matches.length === 0) {
-                dataContainer.innerHTML =
-                    '아직 예약이 없어요.<br>예약하시려면 아래 + 버튼을 눌러주세요.';
-            } else {
-                let html = '';
-                matches.forEach((match) => {
-                    const isFull = match.current_players === match.max_players;
-                    html += `
-        <div class="mt-6 space-y-4">
-          <button onclick="navigateIfLoggedIn('/comment?match_id=${match.match_id}')"
-            class="w-full text-left relative ${isFull ? 'opacity-50 cursor-not-allowed' : ''}"
-            ${isFull ? 'disabled' : ''}>
-            ${isFull ? `<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-xl font-bold">이미 마감.</div>` : ''}
-            <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex flex-col md:flex-row md:items-center items-center">
-              <div class="flex-none text-2xl font-bold whitespace-nowrap md:pr-12">
-                ${match.time_start} ~ ${match.time_end}
-              </div>
-              <div class="w-2/4 text-xl text-gray-700">
-                <p>인원: ${match.current_players} / ${match.max_players}</p>
-                <p>#${match.court_type} , #${match.memo}</p>
-                <p class="text-xs text-gray-500">예약자: ${match.creator_name}</p>
-              </div>
-            </div>
-          </button>
-        </div>
-    `;
-                });
-
-                dataContainer.innerHTML = html;
+            function logout() {
+                localStorage.removeItem("token");
+                alert("로그아웃 되었습니다!");
+                location.reload();
             }
-        })
-        .catch(error => {
-            console.error("예약 데이터를 불러오는 중 오류 발생:", error);
-            dataContainer.innerHTML = '데이터를 불러오는 중 오류가 발생했습니다.';
-        });
-}
+            // 로그인 여부에 따라 targetUrl 또는 /login으로 이동하는 함수
+            function navigateIfLoggedIn(targetUrl) {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    window.location.href = targetUrl;
+                } else {
+                    window.location.href = '/login';
+                }
+            }
 
 
 
+            function selectDate(dateStr) {
+                const dataContainer = document.getElementById('data-container');
 
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch('/get_reserved_dates')
-                .then(response => response.json())
-                .then(data => {
-                    const reservedDates = data.reserved_dates || [];
+                fetch(`/get_matches?date=${dateStr}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let matches = data.matches || [];
 
-                    console.log("🎨 예약된 날짜 목록:", reservedDates);
+                        // 현재 시간 기준으로 아직 진행 중(또는 시작 전)인 매치만 필터링
+                        const now = new Date();
+                        matches = matches.filter(match => {
+                            const matchEndDateTime = new Date(match.date + ' ' + match.time_end);
+                            return matchEndDateTime >= now;
+                        });
 
-                    flatpickr("#calendar", {
-                        dateFormat: "Y-m-d",
-                        locale: "ko",
-                        inline: true,
-                        disableMobile: true,
-                        minDate: 'today',
-                        onChange: function (selectedDates, dateStr) {
-                            if (selectedDates.length > 0) {
-                                console.log("📅 선택한 날짜:", dateStr);
-                                selectDate(dateStr);
-                            }
-                        },
-                        onDayCreate: function (dObj, dStr, fp, dayElem) {
-                            const dateObj = dayElem.dateObj;
-                            const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+                        // 선택한 날짜를 표시하는 헤더 추가 (음수 마진 제거)
+                        let html = `<div class="text-center mt-[-100px] mb-2 font-bold text-xl">${dateStr}</div>`;
 
-                            console.log("🔎 달력 생성 날짜:", dateStr);
 
-                            if (reservedDates.includes(dateStr)) {
-                                console.log("✅ 예약된 날짜:", dateStr);
-
-                                // 기존 Tailwind 클래스를 유지하면서 예약된 날짜에 스타일 적용
-                                dayElem.classList.add("bg-[#FF6A3B]", "rounded-full", "text-black", "font-bold", "border", "border-[#FF6A3B]");
-                            }
+                        if (matches.length === 0) {
+                            html += `<div class="p-4 bg-white border border-gray-300 text-gray-700 text-center rounded-lg shadow-md min-h-[100px]">
+                            아직 예약이 없어요.<br>예약하시려면 아래 <span class="font-bold text-orange-500">+ 버튼</span>을 눌러주세요.
+                         </div>`;
+                        } else {
+                            matches.forEach((match) => {
+                                const isFull = match.current_players === match.max_players;
+                                html += `
+            <div class="space-y-4">
+              <button onclick="navigateIfLoggedIn('/comment?match_id=${match.match_id}')"
+  class="w-full text-left relative bg-white border border-gray-300 shadow-lg rounded-xl p-5 flex flex-col md:flex-row md:items-center items-center
+  ${isFull ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl transition duration-300 ease-in-out'}"
+  ${isFull ? 'disabled' : ''}>
+  
+                ${isFull
+                                        ? `<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 text-white text-lg font-bold rounded-xl">
+                          🚫 이미 마감됨
+                       </div>`
+                                        : ''
+                                    }
+  
+                <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
+                    ⏰ ${match.time_start} ~ ${match.time_end}
+                </div>
+  
+                <div class="w-2/4 text-base text-gray-700 ml-4 text-left">
+                    <p class="font-semibold">👥 인원: ${match.current_players} / ${match.max_players}</p>
+                    <p class="text-gray-600">🏀 #${match.court_type} , ✍️ #${match.memo}</p>
+                    <p class="text-sm text-gray-500 font-medium">📌 예약자: ${match.creator_name}</p>
+                </div>
+              </button>
+            </div>
+        `;
+                            });
                         }
-                        
+                        dataContainer.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error("예약 데이터를 불러오는 중 오류 발생:", error);
+                        dataContainer.innerHTML = '데이터를 불러오는 중 오류가 발생했습니다.';
                     });
-
-                    // 초기 날짜 설정 (오늘 날짜)
-                    const today = new Date();
-                    const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                    selectDate(todayDateStr);
-                })
-                .catch(error => {
-                    console.error("❌ 예약된 날짜 불러오기 실패:", error);
-                });
-        });
+            }
 
 
 
-        // 초기 데이터 설정 (오늘 날짜 기준)
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const dd = String(today.getDate()).padStart(2, "0");
-        const todayDateStr = `${yyyy}-${mm}-${dd}`;
-        selectDate(todayDateStr);
+            document.addEventListener("DOMContentLoaded", function () {
+                fetch('/get_reserved_dates')
+                    .then(response => response.json())
+                    .then(data => {
+                        const reservedDates = data.reserved_dates || [];
+
+                        console.log("🎨 예약된 날짜 목록:", reservedDates);
+
+                        flatpickr("#calendar", {
+                            dateFormat: "Y-m-d",
+                            locale: "ko",
+                            inline: true,
+                            disableMobile: true,
+                            minDate: 'today',
+                            onChange: function (selectedDates, dateStr) {
+                                if (selectedDates.length > 0) {
+                                    console.log("📅 선택한 날짜:", dateStr);
+                                    selectDate(dateStr);
+                                }
+                            },
+                            onDayCreate: function (dObj, dStr, fp, dayElem) {
+                                const dateObj = dayElem.dateObj;
+                                const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+                                console.log("🔎 달력 생성 날짜:", dateStr);
+
+                                if (reservedDates.includes(dateStr)) {
+                                    console.log("✅ 예약된 날짜:", dateStr);
+
+                                    // 기존 Tailwind 클래스를 유지하면서 예약된 날짜에 스타일 적용
+                                    dayElem.classList.add("bg-[#FF6A3B]", "rounded-full", "text-black", "font-bold", "border", "border-[#FF6A3B]");
+                                }
+                            }
+
+                        });
+
+                        // 초기 날짜 설정 (오늘 날짜)
+                        const today = new Date();
+                        const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                        selectDate(todayDateStr);
+                    })
+                    .catch(error => {
+                        console.error("❌ 예약된 날짜 불러오기 실패:", error);
+                    });
+            });
 
 
-    </script>
+
+            // 초기 데이터 설정 (오늘 날짜 기준)
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const dd = String(today.getDate()).padStart(2, "0");
+            const todayDateStr = `${yyyy}-${mm}-${dd}`;
+            selectDate(todayDateStr);
+
+
+        </script>
 </body>
 
 </html>
