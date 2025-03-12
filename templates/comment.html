@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <title>매치 상세 페이지</title>
+    <!-- 🔹(변경됨) 반응형 및 확대 방지 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 min-h-screen flex flex-col items-center">
 
     <!-- 상단 영역: 로고 + 네비게이션 -->
     <div class="flex flex-col items-center pt-8">
@@ -33,37 +35,52 @@
             </div>
         </div>
     </div>
+    
     <!-- 매치 상세 정보 영역 -->
-    <main class="flex-1 flex flex-col items-center mt-8 px-4">
-        <section class="bg-white w-full max-w-xl p-6 rounded-lg shadow-md">
-            <!-- 실제 예약 데이터를 동적으로 채워 넣을 수 있음 -->
-            <div class="mb-4">
-                <h2 id="matchTime" class="text-xl font-bold">10:00 ~ 11:30</h2>
-                <p id="matchParticipants" class="mt-2">인원: <span class="font-semibold">3/6</span></p>
-                <p id="matchMemo" class="mt-2">#풀코트 #먹고음료내기</p>
+    <main class="flex-1 flex flex-col items-center mt-8 px-4 w-full">
+        <!-- 🔹 반응형 적용: 데스크탑에서 중앙 정렬 -->
+        <section class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mx-auto">
+            <div class="mb-4 text-center md:text-left">
+                <h2 id="matchTime" class="text-xl md:text-2xl font-bold">10:00 ~ 11:30</h2>
+                <p id="matchParticipants" class="mt-2 text-base md:text-lg">
+                    인원: <span class="font-semibold">3/6</span>
+                </p>
+                <p id="matchMemo" class="mt-2 text-sm md:text-base">#풀코트 #먹고음료내기</p>
             </div>
-            <!-- 신청하기 버튼: 실제 인원수에 따라 예약 가능 여부를 전달 -->
-            <button id="applyButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">신청하기</button>
-
+            <!-- 🔹 신청하기 버튼을 가운데 정렬 & 크기 자동 조정 -->
+            <div class="flex justify-center">
+                <button id="applyButton" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
+                        w-full sm:w-auto min-w-[120px] max-w-[200px]">
+                    신청하기
+                </button>
+            </div>
         </section>
 
-        <!-- 댓글 섹션 -->
-        <section class="bg-white w-full max-w-xl p-6 rounded-lg shadow-md mt-6">
-            <h3 class="text-lg font-bold mb-4">댓글</h3>
+        <!-- 🔹 반응형 적용: 댓글 섹션도 크기 자동 조정 & 데스크탑에서 중앙 정렬 -->
+        <section class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mt-6 mx-auto">
+            <h3 class="text-lg md:text-xl font-bold mb-4 text-center md:text-left">댓글</h3>
 
             <!-- 기존 댓글 리스트 -->
             <div id="commentList" class="space-y-2 mb-4">
-                <!-- 댓글 목록이 여기에 채워집니다 -->
+                <p class="text-center text-gray-500">등록된 댓글이 없습니다.</p>
             </div>
 
-            <!-- 댓글 입력 -->
+            <!-- 🔹 입력 버튼 크기를 절반으로 축소 & 오른쪽 정렬 유지 -->
             <div class="flex space-x-2">
-                <input type="text" id="commentInput" class="flex-1 border rounded px-3 py-2" placeholder="댓글을 입력하세요." />
-                <button onclick="addComment()"
-                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">입력</button>
+                <input type="text" id="commentInput" 
+                    class="flex-1 border rounded px-3 py-2 text-sm md:text-base" 
+                    placeholder="댓글을 입력하세요." />
+                <button onclick="addComment()" 
+                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 
+                        w-full sm:w-auto min-w-[60px] max-w-[100px]">
+                    입력
+                </button>
             </div>
         </section>
     </main>
+
+
 
     <!-- 인원 꽉 참 팝업 -->
     <div id="fullPopup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
