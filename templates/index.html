@@ -51,12 +51,12 @@
         <div id="guest-buttons" class="flex space-x-2">
           <a
             href="/login"
-            class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]"
+            class="px-4 py-2 bg-black text-white rounded shadow hover:bg-black flex items-center justify-center"
             >로그인</a
           >
           <a
             href="/register"
-            class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600 flex items-center justify-center"
             >회원가입</a
           >
         </div>
@@ -68,15 +68,14 @@
           ></span>
           <a
             href="/reservations"
-            class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm"
-            >내 예약현황</a
-          >
+            class="text-[#15857A] text-sm hover:text-[#0E6153]"
+          >내 예약현황</a>
+
           <button
             onclick="logout()"
-            class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm"
-          >
-            로그아웃
-          </button>
+            class="text-red-500 text-sm hover:text-red-600"
+          >로그아웃</button>
+
         </div>
       </div>
     </div>
@@ -200,9 +199,9 @@
             let html = `<div class="text-center mt-[-100px] mb-2 font-bold text-xl">${dateStr}</div>`;
 
             if (matches.length === 0) {
-              html += `<div class="p-4 bg-white border border-gray-300 text-gray-700 text-center rounded-lg shadow-md min-h-[100px]">
-                                아직 예약이 없어요.<br>예약하시려면 아래 <span class="font-bold text-orange-500">+ 버튼</span>을 눌러주세요.
-                             </div>`;
+            html += `<div class="p-4 bg-white border border-gray-300 text-gray-700 text-center rounded-lg shadow-md min-h-[100px]">
+                    아직 예약이 없어요.<br>예약하시려면 아래 <span class="font-bold text-orange-500">+ 버튼</span>을 눌러주세요.
+                    </div>`;
             } else {
               matches.forEach((match) => {
                 const isFull = match.current_players === match.max_players;
