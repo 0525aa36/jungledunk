@@ -7,33 +7,32 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const token = localStorage.getItem("token");
+      document.addEventListener('DOMContentLoaded', function () {
+        const token = localStorage.getItem('token');
 
-            if (token) {
-                const payload = JSON.parse(atob(token.split(".")[1])); // JWT 토큰 디코딩
-                const username = payload.username;
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1])); // JWT 토큰 디코딩
+          const username = payload.username;
 
-                // 로그인된 사용자 이름을 네비게이션에 반영
-                document.getElementById("user-name").textContent = `${username}님`;
-            }
-        });
-
-        function logout() {
-            localStorage.removeItem("token");  // JWT 토큰 삭제
-            alert("로그아웃 되었습니다!");
-            window.location.href = "/";  // index.html로 이동
+          // 로그인된 사용자 이름을 네비게이션에 반영
+          document.getElementById('user-name').textContent = `${username}님`;
         }
-    </script>
+      });
 
+      function logout() {
+        localStorage.removeItem('token'); // JWT 토큰 삭제
+        alert('로그아웃 되었습니다!');
+        window.location.href = '/'; // index.html로 이동
+      }
+    </script>
   </head>
   <body class="bg-gray-100 flex justify-center items-center min-h-screen">
     <div class="w-full max-w-md p-6">
       <!-- 상단 네비게이션 -->
       <div class="text-right mb-4 text-gray-600">
         <a href="#" class="hover:underline">내 예약현황</a> |
-        <span>방호석님</span> |
-        <a href="#" class="hover:underline">로그아웃</a>
+        <span id="user-name">로그인이 되어있지 않습니다.</span> |
+        <a href="#" class="hover:underline" onclick="logout()">로그아웃</a>
       </div>
       <!-- 타이틀 -->
       <div
@@ -42,17 +41,30 @@
         예약자 명단
       </div>
 
-
       <div class="flex justify-between items-center mt-2">
         <p class="text-lg font-semibold text-gray-800">예약 인원</p>
         <p class="text-lg font-semibold text-gray-800">
-          {{ reservations|length }}/{{ match.max_players }}
+          {{ match.current_players }}/{{ match.max_players }}
         </p>
       </div>
 
       <!-- 예약자 리스트 -->
       <div class="mt-4 space-y-2">
-        {% for reservation in reservations %}
+        {% for reservation in reservations %} {% if reservation.user_id ==
+        match.creator_id|string %}
+        <!-- 주최자: 강조 처리 (예: 배경색을 다르게) -->
+        <div
+          class="flex justify-between items-center bg-yellow-300 px-4 py-2 rounded-lg border-2 border-yellow-500"
+        >
+          <p class="text-sm font-bold">주최자: {{ reservation.username }}님</p>
+          <a
+            href="tel:{{ reservation.phone }}"
+            class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10"
+          >
+            📞
+          </a>
+        </div>
+        {% else %}
         <div
           class="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-lg"
         >
@@ -64,7 +76,7 @@
             📞
           </a>
         </div>
-        {% else %}
+        {% endif %} {% else %}
         <p class="text-center text-gray-500">예약자가 없습니다.</p>
         {% endfor %}
       </div>

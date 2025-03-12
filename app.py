@@ -157,7 +157,7 @@ def create_match():
 
     new_match = {
         '_id': ObjectId(),
-        'creator_id': str(data['creator_id']),  # creator_id를 문자열로 저장
+        'creator_id': ObjectId(data['creator_id']),  # ObjectId로 변환
         'memo': data['memo'],
         'date': data['date'],
         'time_start': data['time_start'],
@@ -219,11 +219,6 @@ def get_matches():
     return jsonify({'matches': matches_data}), 200
 
 
-
-
-
-
-
 # app.py 에 추가
 @app.route('/reserved_times')
 def get_reserved_times():
@@ -245,30 +240,27 @@ def create_reservation():
     if not all(k in data for k in ['match_id', 'user_id']):
         return jsonify({'message': '필수 필드를 입력하세요.'}), 400
 
-    match_id = str(data['match_id'])  # match_id를 문자열로 변환
-    user_id = data['user_id']
+    match_id = str(data['match_id'])
+    # 예약 시 user_id를 ObjectId로 변환하여 저장 (단, data['user_id']가 ObjectId 형식 문자열이어야 함)
+    try:
+        user_obj_id = ObjectId(data['user_id'])
+    except Exception as e:
+        return jsonify({'message': '잘못된 user_id입니다.'}), 400
 
-    print(f"🔍 받은 match_id: {match_id} (타입: {type(match_id)})")
-
-    # match_id가 유효한 ObjectId인지 검증
     try:
         match_obj_id = ObjectId(match_id)
     except Exception as e:
-        print(f"❌ match_id 변환 오류: {e}")
         return jsonify({'message': '잘못된 match_id입니다.'}), 400
 
-    # 예약 정보 저장
-    reservations_collection = db['reservations']
     reservation = {
         'match_id': match_obj_id,  # ObjectId 사용
-        'user_id': user_id,
+        'user_id': user_obj_id,    # ObjectId로 저장
         'reserved_at': datetime.utcnow()
     }
     reservations_collection.insert_one(reservation)
 
-    # 해당 매치의 current_players 1 증가
     matches_collection.update_one(
-        {'_id': match_obj_id},  # ObjectId 사용
+        {'_id': match_obj_id},
         {'$inc': {'current_players': 1}}
     )
 
@@ -400,8 +392,6 @@ def my_reservations():
 
     return render_template('reservations.html', reservations=reservations, current_user_id=current_user_id)
 
-
-
 @app.route('/api/reservations', methods=['GET'])
 def api_reservations():
     auth_header = request.headers.get('Authorization')
@@ -456,25 +446,45 @@ def api_reservations():
             })
     return jsonify({'reservations': reservations_data, 'current_user_id': current_user_id}), 200
 
-
-
-
 # 예약자 목록 조회
 @app.route('/player_list/<match_id>')
 def player_list(match_id):
-    reservations_cursor = reservations_collection.find({'match_id': match_id})
-    players = []
+    # match_id를 ObjectId로 변환해서 조회해야 함
+    try:
+        match_obj_id = ObjectId(match_id)
+    except Exception as e:
+        return "잘못된 match_id입니다.", 400
+    
+    match = matches_collection.find_one({'_id': match_obj_id})
+    if not match:
+        return "해당 매치를 찾을 수 없습니다.", 404
+
+    reservations_cursor = reservations_collection.find({'match_id': match_obj_id})
+    host_reservation = None
+    other_reservations = [] 
+    reservations = []
     for res in reservations_cursor:
         user = users_collection.find_one({'_id': ObjectId(res['user_id'])})
         if user:
-            players.append({
+            reservation_info = {
+                'user_id': str(user['_id']),
                 'username': user.get('username', '알 수 없음'),
                 'phone': user.get('phone', '알 수 없음'),
                 'email': user.get('email', '')
-            })
-    # match 정보도 함께 조회 (예: max_players)
-    match = matches_collection.find_one({'_id': ObjectId(match_id)})
-    return render_template('player_list.html', players=players, match=match)
+            }
+            # 주최자와 예약자의 user_id가 같다면 host_reservation에 저장
+            if reservation_info['user_id'] == str(match['creator_id']):
+                host_reservation = reservation_info
+            else:
+                other_reservations.append(reservation_info)
+
+    # 주최자의 예약 정보가 있다면 앞에 추가합니다.
+    reservations = []
+    if host_reservation:
+        reservations.append(host_reservation)
+    reservations.extend(other_reservations)
+
+    return render_template('player_list.html', reservations=reservations, match=match)
 
     # 모집자가 매치를 취소
 @app.route('/cancel_match/<match_id>', methods=['POST'])
