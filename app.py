@@ -241,18 +241,29 @@ def create_reservation():
     if not all(k in data for k in ['match_id', 'user_id']):
         return jsonify({'message': '필수 필드를 입력하세요.'}), 400
 
-    match_id = str(data['match_id'])
-    # 예약 시 user_id를 ObjectId로 변환하여 저장 (단, data['user_id']가 ObjectId 형식 문자열이어야 함)
     try:
         user_obj_id = ObjectId(data['user_id'])
+        match_obj_id = ObjectId(data['match_id'])
     except Exception as e:
-        return jsonify({'message': '잘못된 user_id입니다.'}), 400
+        return jsonify({'message': '잘못된 id입니다.'}), 400
 
-    try:
-        match_obj_id = ObjectId(match_id)
-    except Exception as e:
-        return jsonify({'message': '잘못된 match_id입니다.'}), 400
+    # 해당 매치 조회
+    match = matches_collection.find_one({'_id': match_obj_id})
+    if not match:
+        return jsonify({'message': '매치를 찾을 수 없습니다.'}), 404
 
+    max_players = match.get('max_players', 0)
+    # find_one_and_update를 사용하여 조건을 만족할 때만 current_players 증가
+    updated_match = matches_collection.find_one_and_update(
+        {'_id': match_obj_id, 'current_players': {'$lt': max_players}},
+        {'$inc': {'current_players': 1}},
+        return_document=True
+    )
+    if not updated_match:
+        # 조건에 부합하지 않아 업데이트되지 않았으므로 예약 불가
+        return jsonify({'message': '예약 신청이 불가능합니다. 이미 인원이 다 찼습니다.'}), 400
+
+    # 예약 정보 저장
     reservation = {
         'match_id': match_obj_id,  # ObjectId 사용
         'user_id': user_obj_id,    # ObjectId로 저장
@@ -260,12 +271,9 @@ def create_reservation():
     }
     reservations_collection.insert_one(reservation)
 
-    matches_collection.update_one(
-        {'_id': match_obj_id},
-        {'$inc': {'current_players': 1}}
-    )
-
     return jsonify({'message': '예약 신청이 완료되었습니다!'}), 201
+
+
 
 
 @app.route('/add_comment', methods=['POST'])
@@ -319,6 +327,12 @@ def get_match():
 
     if not match:
         return jsonify({'message': '해당 매치를 찾을 수 없습니다.'}), 404
+    
+    # creator_name이 없거나 빈 값이라면 동적으로 조회
+    let_creator = match.get('creator_name')
+    if not let_creator:
+        creator = users_collection.find_one({'_id': ObjectId(match.get('creator_id'))})
+        let_creator = creator['username'] if creator else "알 수 없음"
 
     # JSON 직렬화 가능한 형식으로 변환
     match_data = {
@@ -331,7 +345,7 @@ def get_match():
         'current_players': match.get('current_players', 0),
         'max_players': match.get('max_players', 0),
         'creator_id': str(match.get('creator_id', '')),  # 수정된 부분
-        'creator_name': match.get('creator_name', '알 수 없음')
+        'creator_name': let_creator
     }
 
     return jsonify(match_data), 200
@@ -437,20 +451,22 @@ def api_reservations():
                 if creator:
                     creator_name = creator.get('username', '알 수 없음')
             reservations_data.append({
-                'reservation_id': str(res['_id']),
-                'match': {
-                    'date': match.get('date', ''),
-                    'time_start': match.get('time_start', ''),
-                    'time_end': match.get('time_end', ''),
-                    'court_type': match.get('court_type', ''),
-                    'memo': match.get('memo', ''),
-                    'current_players': match.get('current_players', 0),
-                    'max_players': match.get('max_players', 0),
-                    'creator_id': str(match.get('creator_id', '')),
-                    'creator_name': creator_name,
-                    '_id': str(match['_id'])
-                }
-            })
+    'reservation_id': str(res['_id']),
+    'match': {
+        'match_id': str(match['_id']),  # 매치 고유 id 추가
+        'date': match.get('date', ''),
+        'time_start': match.get('time_start', ''),
+        'time_end': match.get('time_end', ''),
+        'court_type': match.get('court_type', ''),
+        'memo': match.get('memo', ''),
+        'current_players': match.get('current_players', 0),
+        'max_players': match.get('max_players', 0),
+        'creator_id': str(match.get('creator_id', '')),
+        'creator_name': creator_name,
+        '_id': str(match['_id'])
+    }
+})
+
     return jsonify({'reservations': reservations_data, 'current_user_id': current_user_id}), 200
 
 
@@ -584,4 +600,5 @@ def cancel_reservation(reservation_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
