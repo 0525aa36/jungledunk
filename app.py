@@ -136,7 +136,6 @@ def create_match():
     new_time_end = parse_time(data['time_end'])
     new_court_type = data['court_type'].lower()
 
-    # 동일 날짜에 모집중인 예약들 검증 (생략: 기존 로직 그대로)
     existing_matches = list(matches_collection.find({'date': new_date, 'status': '모집중'}))
     if new_court_type == "full":
         for match in existing_matches:
@@ -156,10 +155,9 @@ def create_match():
         if count >= 2:
             return jsonify({'message': '해당 시간대에는 이미 2건의 Half 코트 예약이 있습니다.'}), 400
 
-    # creator_id는 문자열 형태의 사용자의 _id로 저장 (이렇게 하면 나중에 get_match 에서 변환하여 조회할 수 있습니다)
     new_match = {
         '_id': ObjectId(),
-        'creator_id': str(data['creator_id']),  # _id값을 문자열로 저장
+        'creator_id': str(data['creator_id']),  # creator_id를 문자열로 저장
         'memo': data['memo'],
         'date': data['date'],
         'time_start': data['time_start'],
@@ -172,8 +170,18 @@ def create_match():
         'created_at': datetime.utcnow()
     }
 
-    result = matches_collection.insert_one(new_match)
+    matches_collection.insert_one(new_match)
+
+    # 매치 생성자도 예약에 자동 포함
+    reservation = {
+        'match_id': new_match['_id'],
+        'user_id': new_match['creator_id'],
+        'reserved_at': datetime.utcnow()
+    }
+    reservations_collection.insert_one(reservation)
+
     return jsonify({'message': '모집 등록 성공!', 'match_id': str(new_match['_id'])}), 201
+
 
 
 @app.route('/get_matches', methods=['GET'])
@@ -369,7 +377,7 @@ def my_reservations():
     reservations = []
     
     for res in my_reservations_cursor:
-        match = matches_collection.find_one({'_id': ObjectId(res['match_id'])})
+        match = matches_collection.find_one({'_id': ObjectId(res['creator_id'])})
         if match:
             # creator_id로 예약자의 username 찾기
             creator = users_collection.find_one({'_id': match['creator_id']})
@@ -396,7 +404,6 @@ def my_reservations():
 
 @app.route('/api/reservations', methods=['GET'])
 def api_reservations():
-    # 클라이언트가 AJAX 요청 시, Authorization 헤더에 토큰을 설정하도록 합니다.
     auth_header = request.headers.get('Authorization')
     if not auth_header:
         return jsonify({'message': 'Authorization header가 필요합니다.'}), 401
@@ -407,7 +414,6 @@ def api_reservations():
     except Exception as e:
         return jsonify({'message': '유효하지 않은 토큰입니다.', 'error': str(e)}), 401
 
-    # JWT 토큰에서 user_id를 추출하고, _id 필드로 조회합니다.
     user_id = payload.get('user_id')
     if not user_id:
         return jsonify({'message': '토큰 payload에 user_id가 없습니다.'}), 401
@@ -426,9 +432,17 @@ def api_reservations():
     for res in my_reservations_cursor:
         match = matches_collection.find_one({'_id': ObjectId(res['match_id'])})
         if match:
+            # /get_matches와 동일한 방식으로 creator_name을 조회
+            creator_name = "알 수 없음"
+            creator_id = match.get('creator_id')
+            if ObjectId.is_valid(creator_id):
+                creator = users_collection.find_one({'_id': ObjectId(creator_id)})
+                if creator:
+                    creator_name = creator.get('username', '알 수 없음')
             reservations_data.append({
                 'reservation_id': str(res['_id']),
                 'match': {
+                    'date': match.get('date', ''),   # 날짜 필드 추가
                     'time_start': match.get('time_start', ''),
                     'time_end': match.get('time_end', ''),
                     'court_type': match.get('court_type', ''),
@@ -436,10 +450,12 @@ def api_reservations():
                     'current_players': match.get('current_players', 0),
                     'max_players': match.get('max_players', 0),
                     'creator_id': match.get('creator_id', ''),
+                    'creator_name': creator_name,
                     '_id': str(match['_id'])
                 }
             })
     return jsonify({'reservations': reservations_data, 'current_user_id': current_user_id}), 200
+
 
 
 

@@ -240,40 +240,47 @@ function applyMatch(matchId, currentParticipants, maxParticipants) {
 
         // 특정 매치 정보를 불러와 화면에 표시
         function loadMatchDetails() {
-            const matchId = getMatchIdFromUrl();
-            if (!matchId) {
-                alert("잘못된 접근입니다. match_id가 없습니다.");
+    const matchId = getMatchIdFromUrl();
+    if (!matchId) {
+        alert("잘못된 접근입니다. match_id가 없습니다.");
+        return;
+    }
+
+    fetch(`/get_match?match_id=${matchId}`)
+        .then(response => response.json())
+        .then(match => {
+            if (match.message) {
+                alert(match.message);
                 return;
             }
 
-            fetch(`/get_match?match_id=${matchId}`)
-                .then(response => response.json())
-                .then(match => {
-                    if (match.message) {
-                        alert(match.message);
-                        return;
-                    }
+            // HTML 요소 업데이트
+            document.getElementById("matchTime").innerText = `${match.time_start} ~ ${match.time_end}`;
+            document.getElementById("matchParticipants").innerHTML = `인원: <span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
+            document.getElementById("matchMemo").innerText = `#${match.court_type} #${match.memo}`;
 
-                    // HTML 요소 업데이트
-                    document.getElementById("matchTime").innerText = `${match.time_start} ~ ${match.time_end}`;
-                    document.getElementById("matchParticipants").innerHTML = `인원: <span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
-                    document.getElementById("matchMemo").innerText = `#${match.court_type} #${match.memo}`;
+            // JWT 토큰에서 현재 사용자 정보 추출
+            const token = localStorage.getItem("token");
+            let currentUserId = null;
+            if (token) {
+                const payload = JSON.parse(atob(token.split(".")[1]));
+                currentUserId = payload.user_id;
+            }
 
-                    // 🛠 applyButton을 가져와서 matchId를 설정
-                    setTimeout(() => {
-                        const applyButton = document.getElementById("applyButton");
-                        if (applyButton) {
-                            console.log("✅ applyButton 요소 찾음");
-                            applyButton.setAttribute("onclick", `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`);
-                        } else {
-                            console.error("❌ applyButton 요소를 찾을 수 없습니다.");
-                        }
-                    }, 500);  // 버튼이 렌더링될 시간을 확보
-                })
-                .catch(error => {
-                    console.error("❌ 매치 데이터를 불러오는 중 오류 발생:", error);
-                });
-        }
+            const applyButton = document.getElementById("applyButton");
+            if (currentUserId && match.creator_id === currentUserId) {
+                // 매치 생성자라면 신청하기 버튼 숨김
+                applyButton.style.display = "none";
+            } else {
+                // 다른 사용자는 신청 가능하도록 버튼 활성화
+                applyButton.style.display = "block";
+                applyButton.setAttribute("onclick", `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`);
+            }
+        })
+        .catch(error => {
+            console.error("❌ 매치 데이터를 불러오는 중 오류 발생:", error);
+        });
+}
 
 
 
