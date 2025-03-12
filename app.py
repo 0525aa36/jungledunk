@@ -22,7 +22,7 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'jungle.dunkk@gmail.com'
-app.config['MAIL_PASSWORD'] = 'wowow131'
+app.config['MAIL_PASSWORD'] = 'jsuj jnug ixig yqei'
 app.config['MAIL_DEFAULT_SENDER'] = 'jungle.dunkk@gmail.com'
 app.config['MAIL_SUPPRESS_SEND'] = False  # True로 설정하면 실제 전송 안함
 mail = Mail(app)
@@ -182,8 +182,6 @@ def create_match():
 
     return jsonify({'message': '모집 등록 성공!', 'match_id': str(new_match['_id'])}), 201
 
-
-
 @app.route('/get_matches', methods=['GET'])
 def get_matches():
     date = request.args.get('date')
@@ -218,7 +216,6 @@ def get_matches():
 
     
     return jsonify({'matches': matches_data}), 200
-
 
 # app.py 에 추가
 @app.route('/reserved_times')
@@ -497,42 +494,47 @@ def player_list(match_id):
     # 모집자가 매치를 취소
 @app.route('/cancel_match/<match_id>', methods=['POST'])
 def cancel_match(match_id):
-    # 취소 사유를 폼 데이터나 JSON으로부터 받아옴
-    cancellation_reason = request.form.get('reason') or request.json.get('reason')
+    # 삭제 사유를 폼 데이터나 JSON으로부터 받아옴
+    data = request.get_json()  # JSON 요청으로 받는다고 가정
+    cancellation_reason = data.get('reason') if data else None
     if not cancellation_reason:
         return jsonify({'message': '취소 사유를 입력하세요.'}), 400
 
-    # match_id가 MongoDB ObjectId 타입인 경우 변환
+    # match_id를 ObjectId로 변환
     try:
         match_obj_id = ObjectId(match_id)
     except Exception as e:
         return jsonify({'message': '유효하지 않은 match_id입니다.'}), 400
 
-    # 모집글의 상태 업데이트: status를 "cancelled"로, 취소 사유 저장
+    # 업데이트 전에 현재 상태를 확인 (디버그용)
+    match_before = matches_collection.find_one({'_id': match_obj_id})
+    print("Before update, match status:", match_before.get('status', '없음'))
+
+    # 모집글 상태 업데이트: status를 "cancelled"로 변경
     update_result = matches_collection.update_one(
         {'_id': match_obj_id},
-        {'$set': {'status': 'cancelled', 'cancel_reason': cancellation_reason, 'cancelled_at': datetime.utcnow()}}
+        {'$set': {
+            'status': 'cancelled', 
+            'cancel_reason': cancellation_reason, 
+            'cancelled_at': datetime.utcnow()
+        }}
     )
+    print("Update result modified_count:", update_result.modified_count)
+
     if update_result.modified_count == 0:
         return jsonify({'message': '모집글 취소 업데이트 실패'}), 400
 
-    # 해당 모집글(match_id)에 신청한 예약 기록 조회
-    reservations = list(reservations_collection.find({'match_id': match_id}))
+    # 매치에 신청한 예약(참여자)들을 조회합니다.
+    reservations = list(reservations_collection.find({'match_id': match_obj_id}))
     if not reservations:
         return jsonify({'message': '신청한 사람이 없습니다.'}), 200
 
-    # 각 예약 기록의 user_id를 이용하여 사용자 이메일, username, phone 정보를 조회
+    # 참여자들의 이메일을 수집합니다.
     recipient_emails = []
-    applicant_details = []  # 이메일 전송 외에도 정보를 로깅하거나 추가 처리 가능
     for reservation in reservations:
         user = users_collection.find_one({'_id': ObjectId(reservation['user_id'])})
-        if user and 'email' in user:
+        if user and user.get('email'):
             recipient_emails.append(user['email'])
-            applicant_details.append({
-                'username': user.get('username', '알 수 없음'),
-                'phone': user.get('phone', '알 수 없음'),
-                'email': user['email']
-            })
 
     if not recipient_emails:
         return jsonify({'message': '신청자 이메일 정보를 찾을 수 없습니다.'}), 400
@@ -552,11 +554,12 @@ def cancel_match(match_id):
         msg.body = body
         mail.send(msg)
     except Exception as e:
+        print("메일 전송 중 오류:", str(e))  # 콘솔에 상세 오류 출력
         return jsonify({'message': '이메일 전송 실패', 'error': str(e)}), 500
 
     return jsonify({'message': '모집글 취소 및 이메일 전송 성공!'}), 200
 
- # 참여자 예약 취소
+    # 참여자 예약 취소
 @app.route('/cancel_reservation/<reservation_id>', methods=['POST'])
 def cancel_reservation(reservation_id):
     # 예약 id로 예약 정보 조회
