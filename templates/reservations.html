@@ -40,44 +40,46 @@
     </div>
 
     <!-- 예약 리스트 -->
-<div id="reservations-container" class="mt-6 space-y-4">
-  {% if reservations %}
-    {% for res in reservations %}
+    <div id="reservations-container" class="mt-6 space-y-4">
+      {% if reservations %}
+      {% for res in reservations %}
       {% set match = res.match %}
       <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
         <div class="w-1/4 text-left">
+          <p class="text-sm text-gray-500">날짜: {{ match.date }}</p>
           <p class="text-lg font-semibold text-gray-800">
             {{ match.time_start }} ~ {{ match.time_end }}
           </p>
         </div>
+
         <div class="w-2/4 text-sm text-gray-700">
           <p>인원 : {{ match.current_players }}/{{ match.max_players }}</p>
           <p>#{{ match.court_type }} #{{ match.memo }}</p>
           <p class="text-xs text-gray-500">예약자: {{ match.creator_name }}</p>
         </div>
         <div class="w-1/4 flex flex-col items-end space-y-2">
-          {% if match.creator_id == current_user_id %}
-            <button onclick="openPopup('{{ match._id }}')"
-              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
-              삭제하기
-            </button>
-            <a href="/player_list/{{ match._id }}"
-              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
-              예약자 명단
-            </a>
+          {% if match.creator_id == current_user_id %}openCancelPopup
+          <button onclick="openPopup('{{ match._id }}')"
+            class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
+            삭제하기
+          </button>
+          <a href="/player_list/{{ match._id }}"
+            class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
+            예약자 명단
+          </a>
           {% else %}
-            <button onclick="openCancelPopup('{{ match._id }}', '{{ res.reservation_id }}')"
-              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
-              취소하기
-            </button>
+          <button onclick="openCancelPopup('{{ match._id }}', '{{ res.reservation_id }}')"
+            class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
+            취소하기
+          </button>
           {% endif %}
         </div>
       </div>
-    {% endfor %}
-  {% else %}
-    <p class="text-center text-gray-500">예약 내역이 없습니다.</p>
-  {% endif %}
-</div>
+      {% endfor %}
+      {% else %}
+      <p class="text-center text-gray-500">예약 내역이 없습니다.</p>
+      {% endif %}
+    </div>
 
   </div>
 
@@ -129,48 +131,72 @@
     }
 
     function renderReservations(data) {
-    const reservations = data.reservations || [];
-    const currentUserId = data.current_user_id;
-    const container = document.getElementById("reservations-container");
-    let html = "";
-    if (reservations.length === 0) {
-      html = '<p class="text-center text-gray-500">예약 내역이 없습니다.</p>';
-    } else {
-      reservations.forEach(res => {
-        const match = res.match;
-        html += `
-          <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
-            <div class="w-1/4 text-left">
-              <p class="text-lg font-semibold text-gray-800">
-                ${match.time_start} ~ ${match.time_end}
-              </p>
-            </div>
-            <div class="w-2/4 text-sm text-gray-700">
-              <p>인원 : ${match.current_players} / ${match.max_players}</p>
-              <p>#${match.court_type} #${match.memo}</p>
-              <p class="text-xs text-gray-500">예약자: ${match.creator_name}</p>
-            </div>
-            <div class="w-1/4 flex flex-col items-end space-y-2">
-              ${match.creator_id === currentUserId
-                ? `<button onclick="openPopup('${match._id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">삭제하기</button>
-                   <a href="/player_list/${match._id}" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">예약자 명단</a>`
-                : `<button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">취소하기</button>`
-              }
-            </div>
-          </div>
-        `;
-      });
-    }
-    container.innerHTML = html;
-  }
+      const reservations = data.reservations || [];
+      const currentUserId = data.current_user_id;
+      const container = document.getElementById("reservations-container");
+      let html = "";
+      if (reservations.length === 0) {
+        html = '<p class="text-center text-gray-500">예약 내역이 없습니다.</p>';
+      } else {
+        reservations.forEach(res => {
+          const match = res.match;
+          html += `
+  <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
+    <div class="w-1/4 text-left">
+      <p class="text-sm text-gray-500">날짜: ${match.date}</p>
+      <p class="text-lg font-semibold text-gray-800">
+        ${match.time_start} ~ ${match.time_end}
+      </p>
+    </div>
+    <div class="w-2/4 text-sm text-gray-700">
+      <p>인원 : ${match.current_players} / ${match.max_players}</p>
+      <p>#${match.court_type} #${match.memo}</p>
+      <p class="text-xs text-gray-500">예약자: ${match.creator_name}</p>
+    </div>
+    <div class="w-1/4 flex flex-col items-end space-y-2">
+      ${match.creator_id === currentUserId
+              ? `<button onclick="openPopup('${match._id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">삭제하기</button>
+           <a href="/player_list/${match._id}" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">예약자 명단</a>`
+              : `<button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">취소하기</button>`
+            }
+    </div>
+  </div>
+`;
 
-  function openPopup(matchId) {
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    function openPopup(matchId) {
       alert(`매치 삭제 기능 (ID: ${matchId})`);
     }
 
     function openCancelPopup(matchId, reservationId) {
-      alert(`예약 취소 기능 (Match ID: ${matchId}, Reservation ID: ${reservationId})`);
+      if (confirm("정말 예약을 취소하시겠습니까?")) {
+        // '네'를 선택하면 취소 API 호출
+        fetch(`/cancel_reservation/${reservationId}`, {
+          method: 'POST'
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.message === "예약 취소 성공!") {
+              alert("예약이 취소되었습니다.");
+              // 예약 목록 새로고침
+              fetchReservations();
+            } else {
+              alert("예약 취소 실패: " + data.message);
+            }
+          })
+          .catch(error => {
+            console.error("예약 취소 중 오류 발생:", error);
+            alert("예약 취소 중 오류가 발생했습니다.");
+          });
+      } else {
+        // '아니오' 선택 시 아무런 동작 없이 종료
+      }
     }
+
   </script>
 </body>
 

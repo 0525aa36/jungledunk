@@ -113,22 +113,30 @@
 
 
         function selectDate(dateStr) {
-            const dataContainer = document.getElementById('data-container');
+    const dataContainer = document.getElementById('data-container');
 
-            fetch(`/get_matches?date=${dateStr}`)
-                .then(response => response.json())
-                .then(data => {
-                    let matches = data.matches || [];
+    fetch(`/get_matches?date=${dateStr}`)
+        .then(response => response.json())
+        .then(data => {
+            let matches = data.matches || [];
 
-                    // (필요하다면 현재 시간 비교 등 추가 로직 삽입 가능)
-                    if (matches.length === 0) {
-                        dataContainer.innerHTML =
-                            '아직 예약이 없어요.<br>예약하시려면 아래 + 버튼을 눌러주세요.';
-                    } else {
-                        let html = '';
-                        matches.forEach((match) => {
-                            const isFull = match.current_players === match.max_players;
-                            html += `
+            // 현재 시간 기준으로 아직 진행 중(또는 시작 전)인 매치만 필터링
+            const now = new Date();
+            matches = matches.filter(match => {
+                // match.date는 "YYYY-MM-DD", match.time_end는 "HH:MM" 형식이라고 가정
+                const matchEndDateTime = new Date(match.date + ' ' + match.time_end);
+                // 현재 시간이 matchEndDateTime보다 작거나 같으면 아직 진행중인 매치
+                return matchEndDateTime >= now;
+            });
+
+            if (matches.length === 0) {
+                dataContainer.innerHTML =
+                    '아직 예약이 없어요.<br>예약하시려면 아래 + 버튼을 눌러주세요.';
+            } else {
+                let html = '';
+                matches.forEach((match) => {
+                    const isFull = match.current_players === match.max_players;
+                    html += `
         <div class="mt-6 space-y-4">
           <button onclick="navigateIfLoggedIn('/comment?match_id=${match.match_id}')"
             class="w-full text-left relative ${isFull ? 'opacity-50 cursor-not-allowed' : ''}"
@@ -142,22 +150,22 @@
                 <p>인원: ${match.current_players} / ${match.max_players}</p>
                 <p>#${match.court_type} , #${match.memo}</p>
                 <p class="text-xs text-gray-500">예약자: ${match.creator_name}</p>
-
               </div>
             </div>
           </button>
         </div>
     `;
-                        });
-
-                        dataContainer.innerHTML = html;
-                    }
-                })
-                .catch(error => {
-                    console.error("예약 데이터를 불러오는 중 오류 발생:", error);
-                    dataContainer.innerHTML = '데이터를 불러오는 중 오류가 발생했습니다.';
                 });
-        }
+
+                dataContainer.innerHTML = html;
+            }
+        })
+        .catch(error => {
+            console.error("예약 데이터를 불러오는 중 오류 발생:", error);
+            dataContainer.innerHTML = '데이터를 불러오는 중 오류가 발생했습니다.';
+        });
+}
+
 
 
 
@@ -194,6 +202,7 @@
                                 dayElem.classList.add("bg-[#FF6A3B]", "rounded-full", "text-black", "font-bold", "border", "border-[#FF6A3B]");
                             }
                         }
+                        
                     });
 
                     // 초기 날짜 설정 (오늘 날짜)
