@@ -5,56 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>예약자 명단</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const payload = JSON.parse(atob(token.split('.')[1])); // JWT 토큰 디코딩
-          const username = payload.username;
-          // 로그인된 사용자 이름을 네비게이션에 반영
-          document.getElementById('username-display').textContent = `${username}님!`;
-          document.getElementById('guest-buttons').classList.add('hidden');
-          document.getElementById('user-buttons').classList.remove('hidden');
-        }
-      });
-
-      function logout() {
-        localStorage.removeItem('token'); // JWT 토큰 삭제
-        alert('로그아웃 되었습니다!');
-        window.location.href = '/'; // index.html로 이동
-      }
-    </script>
   </head>
+
   <body class="bg-gray-100 flex justify-center items-center min-h-screen">
     <div class="w-full max-w-md p-6">
       <!-- 로고 -->
       <div class="mb-4">
         <a href="/">
-          <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-               class="h-20 w-auto mx-auto" />
+          <img
+            src="{{ url_for('static', filename='jungledunk.png') }}"
+            alt="Jungle Dunk Logo"
+            class="h-20 w-auto mx-auto"
+          />
         </a>
       </div>
       <!-- 로그인 상태에 따른 버튼 (네비게이션) -->
       <div id="nav-center" class="flex items-center space-x-2 mb-8">
         <!-- 게스트 상태 -->
         <div id="guest-buttons" class="flex space-x-2">
-          <a href="/login" class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]">로그인</a>
-          <a href="/register" class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600">회원가입</a>
+          <a
+            href="/login"
+            class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]"
+            >로그인</a
+          >
+          <a
+            href="/register"
+            class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >회원가입</a
+          >
         </div>
         <!-- 로그인 된 상태 -->
         <div id="user-buttons" class="hidden flex items-center space-x-2">
-          <span id="username-display" class="text-sm font-bold text-gray-800"></span>
-          <a href="/reservations"
-             class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm">내 예약현황</a>
-          <button onclick="logout()"
-                  class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm">로그아웃</button>
+          <span
+            id="username-display"
+            class="text-sm font-bold text-gray-800"
+          ></span>
+          <a
+            href="/reservations"
+            class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm"
+            >내 예약현황</a
+          >
+          <button
+            onclick="logout()"
+            class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm"
+          >
+            로그아웃
+          </button>
         </div>
       </div>
       <!-- 타이틀 -->
-      <div class="bg-gray-300 text-lg font-bold px-6 py-3 rounded-lg text-center">
+      <div
+        class="bg-gray-300 text-lg font-bold px-6 py-3 rounded-lg text-center"
+      >
         예약자 명단
       </div>
-      
+
       <div class="flex justify-between items-center mt-2">
         <p class="text-lg font-semibold text-gray-800">예약 인원</p>
         <p class="text-lg font-semibold text-gray-800">
@@ -64,29 +69,92 @@
 
       <!-- 예약자 리스트 -->
       <div class="mt-4 space-y-2">
-        {% for reservation in reservations %}
-          {% if reservation.user_id == match.creator_id|string %}
-            <!-- 주최자: 강조 처리 (예: 배경색을 다르게) -->
-            <div class="flex justify-between items-center bg-yellow-300 px-4 py-2 rounded-lg border-2 border-yellow-500">
-              <p class="text-sm font-bold">주최자: {{ reservation.username }}님</p>
-              <a href="tel:{{ reservation.phone }}"
-                 class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10">
-                📞
-              </a>
-            </div>
-          {% else %}
-            <div class="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-lg">
-              <p class="text-sm font-medium">이름: {{ reservation.username }}님</p>
-              <a href="tel:{{ reservation.phone }}"
-                 class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10">
-                📞
-              </a>
-            </div>
-          {% endif %}
+        {% for reservation in reservations %} {% if reservation.user_id ==
+        match.creator_id|string %}
+        <!-- 주최자: 강조 처리 (예: 배경색을 다르게) -->
+        <div
+          class="flex justify-between items-center bg-yellow-300 px-4 py-2 rounded-lg border-2 border-yellow-500"
+        >
+          <p class="text-sm font-bold">주최자: {{ reservation.username }}님</p>
+          <a
+            href="tel:{{ reservation.phone }}"
+            class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10"
+          >
+            📞
+          </a>
+        </div>
         {% else %}
-          <p class="text-center text-gray-500">예약자가 없습니다.</p>
+        <div
+          class="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-lg"
+        >
+          <p class="text-sm font-medium">이름: {{ reservation.username }}님</p>
+          <a
+            href="tel:{{ reservation.phone }}"
+            class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10"
+          >
+            📞
+          </a>
+        </div>
+        {% endif %} {% else %}
+        <p class="text-center text-gray-500">예약자가 없습니다.</p>
         {% endfor %}
       </div>
+
+      <!-- 커스텀 알림 -->
+      <div
+        id="customAlertPopup"
+        class="hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+      >
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+          <p id="customAlertMessage" class="text-lg"></p>
+          <div class="mt-4 flex justify-center">
+            <button
+              onclick="closeCustomAlert()"
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <script>
+      // 커스텀 알림 팝업 함수들을 최상단에 정의합니다.
+      function showCustomAlert(message) {
+        document.getElementById('customAlertMessage').textContent = message;
+        document.getElementById('customAlertPopup').classList.remove('hidden');
+      }
+
+      function closeCustomAlert() {
+        document.getElementById('customAlertPopup').classList.add('hidden');
+        // 알림 메시지가 "로그아웃 되었습니다."라면 새로고침합니다.
+        if (
+          document.getElementById('customAlertMessage').textContent ===
+          '로그아웃 되었습니다.'
+        ) {
+          window.location.href = '/'; // index.html로 이동
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1])); // JWT 토큰 디코딩
+          const username = payload.username;
+          // 로그인된 사용자 이름을 네비게이션에 반영
+          document.getElementById(
+            'username-display'
+          ).textContent = `${username}님!`;
+          document.getElementById('guest-buttons').classList.add('hidden');
+          document.getElementById('user-buttons').classList.remove('hidden');
+        }
+      });
+
+      function logout() {
+        localStorage.removeItem('token');
+        showCustomAlert('로그아웃 되었습니다.');
+      }
+    </script>
   </body>
 </html>

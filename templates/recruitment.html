@@ -1,84 +1,116 @@
 <!DOCTYPE html>
 <html lang="ko">
-
-<head>
-  <meta charset="UTF-8" />
-  <title>모집하기</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- flatpickr CSS/JS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <style>
-    .flatpickr-calendar.inline {
-      position: static !important;
-      max-width: none !important;
-      margin: 0 !important;
-      transform: scale(1) !important;
-      transform-origin: top left !important;
-    }
-
-    @media (min-width: 1024px) {
+  <head>
+    <meta charset="UTF-8" />
+    <title>모집하기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- flatpickr CSS/JS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
       .flatpickr-calendar.inline {
-        transform: scale(1.5) !important;
+        position: static !important;
+        max-width: none !important;
+        margin: 0 !important;
+        transform: scale(1) !important;
+        transform-origin: top left !important;
       }
-    }
-  </style>
-</head>
 
-<body class="bg-gray-100 min-h-screen flex flex-col">
-  <div class="flex flex-col items-center pt-8">
-    <!-- 로고 -->
-    <div class="mb-4">
-      <a href="/">
-        <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-             class="h-20 w-auto mx-auto" />
-      </a>
-    </div>
-    
-    <!-- 로그인 상태에 따른 버튼 -->
-    <div id="nav-center" class="flex items-center space-x-2 mb-8">
-      <!-- 게스트 상태 -->
-      <div id="guest-buttons" class="flex space-x-2">
-        <a href="/login" class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]">로그인</a>
-        <a href="/register" class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600">회원가입</a>
+      @media (min-width: 1024px) {
+        .flatpickr-calendar.inline {
+          transform: scale(1.5) !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-100 min-h-screen flex flex-col">
+    <div class="flex flex-col items-center pt-8">
+      <!-- 로고 -->
+      <div class="mb-4">
+        <a href="/">
+          <img
+            src="{{ url_for('static', filename='jungledunk.png') }}"
+            alt="Jungle Dunk Logo"
+            class="h-20 w-auto mx-auto"
+          />
+        </a>
       </div>
-      <!-- 로그인 된 상태 -->
-      <div id="user-buttons" class="hidden flex items-center space-x-2">
-        <span id="username-display" class="text-sm font-bold text-gray-800"></span>
-        <a href="/reservations" class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm">내
-          예약현황</a>
-        <button onclick="logout()"
-          class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm">로그아웃</button>
+
+      <!-- 로그인 상태에 따른 버튼 -->
+      <div id="nav-center" class="flex items-center space-x-2 mb-8">
+        <!-- 게스트 상태 -->
+        <div id="guest-buttons" class="flex space-x-2">
+          <a
+            href="/login"
+            class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]"
+            >로그인</a
+          >
+          <a
+            href="/register"
+            class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >회원가입</a
+          >
+        </div>
+        <!-- 로그인 된 상태 -->
+        <div id="user-buttons" class="hidden flex items-center space-x-2">
+          <span
+            id="username-display"
+            class="text-sm font-bold text-gray-800"
+          ></span>
+          <a
+            href="/reservations"
+            class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm"
+            >내 예약현황</a
+          >
+          <button
+            onclick="logout()"
+            class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm"
+          >
+            로그아웃
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- 메인 컨테이너 -->
-  <main class="flex flex-col items-center p-6">
-    <h1 class="text-2xl font-bold mb-4">모집하기</h1>
+    <!-- 메인 컨테이너 -->
+    <main class="flex flex-col items-center p-6">
+      <h1 class="text-2xl font-bold mb-4">모집하기</h1>
 
-    <!-- 모집하기 폼 -->
-    <!-- recruitment.html (모집하기 폼 부분 예시) -->
-    <section class="w-full max-w-lg bg-white p-6 rounded shadow mb-6">
+      <!-- 모집하기 폼 -->
+      <!-- recruitment.html (모집하기 폼 부분 예시) -->
+      <section class="w-full max-w-lg bg-white p-6 rounded shadow mb-6">
         <!-- 캘린더 섹션 -->
         <section class="mb-6">
-            <h2 class="text-xl font-bold mb-4">날짜 선택</h2>
-            <div class="flex justify-center">
-                <div id="calendar"></div>
-            </div>
+          <h2 class="text-xl font-bold mb-4">날짜 선택</h2>
+          <div class="flex justify-center">
+            <div id="calendar"></div>
+          </div>
         </section>
-        
-    
 
         <!-- 이용시간 -->
         <div class="mb-4">
           <label class="block font-semibold mb-1">
             이용시간
-            <span class="text-red-500 text-xs ml-2">예약은 1~2시간만 가능합니다</span>
+            <span class="text-red-500 text-xs ml-2"
+              >예약은 1~2시간만 가능합니다</span
+            >
           </label>
           <div class="flex space-x-2">
             <select id="timeStart" class="border rounded px-2 py-1 w-1/2">
+              <option value="06:00">06:00</option>
+              <option value="06:00">06:00</option>
+              <option value="06:30">06:30</option>
+              <option value="07:00">07:00</option>
+              <option value="07:30">07:30</option>
+              <option value="08:00">08:00</option>
+              <option value="08:30">08:30</option>
+              <option value="09:00">09:00</option>
+              <option value="09:30">09:30</option>
               <option value="10:00">10:00</option>
               <option value="10:30">10:30</option>
               <option value="11:00">11:00</option>
@@ -100,24 +132,19 @@
               <option value="19:00">19:00</option>
               <option value="19:30">19:30</option>
               <option value="20:00">20:00</option>
-            </select>
-            
-            <span class="self-center">~</span>
-            <select id="timeEnd" class="border rounded px-2 py-1 w-1/2">
-              <option value="11:00">11:00</option>
-              <option value="11:30">11:30</option>
-              <option value="12:00">12:00</option>
-              <option value="13:00">13:00</option>
-              <option value="14:00">14:00</option>
-              <option value="15:00">15:00</option>
-              <option value="16:00">16:00</option>
-              <option value="17:00">17:00</option>
-              <option value="18:00">18:00</option>
-              <option value="19:00">19:00</option>
-              <option value="20:00">20:00</option>
+              <option value="20:30">20:30</option>
               <option value="21:00">21:00</option>
+              <option value="21:30">21:30</option>
+              <option value="22:00">22:00</option>
+              <option value="22:30">22:30</option>
+              <option value="23:00">23:00</option>
             </select>
-            
+
+            <span class="self-center">~</span>
+            <select
+              id="timeEnd"
+              class="border rounded px-2 py-1 w-1/2"
+            ></select>
           </div>
         </div>
 
@@ -126,7 +153,13 @@
           <label class="block font-semibold mb-1">코트</label>
           <div class="flex space-x-4">
             <label class="inline-flex items-center">
-              <input type="radio" name="court" value="Full" class="mr-1" checked />
+              <input
+                type="radio"
+                name="court"
+                value="Full"
+                class="mr-1"
+                checked
+              />
               <span>Full</span>
             </label>
             <label class="inline-flex items-center">
@@ -150,169 +183,213 @@
         <!-- 메모 -->
         <div class="mb-4">
           <label class="block font-semibold mb-1">메모</label>
-          <textarea id="memo" class="border rounded w-full h-24 p-2" placeholder="추가 안내 내용을 입력하세요."></textarea>
+          <textarea
+            id="memo"
+            class="border rounded w-full h-24 p-2"
+            placeholder="추가 안내 내용을 입력하세요."
+          ></textarea>
         </div>
 
         <!-- 모집하기 버튼 -->
         <div class="text-center">
-          <button id="recruitButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          <button
+            id="recruitButton"
+            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
             모집하기
           </button>
         </div>
       </section>
+    </main>
 
+    <script>
+      // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
+      document.addEventListener('DOMContentLoaded', function () {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const username = payload.username;
+          document.getElementById(
+            'username-display'
+          ).textContent = `${username}님!`;
+          document.getElementById('guest-buttons').classList.add('hidden');
+          document.getElementById('user-buttons').classList.remove('hidden');
+        }
+      });
 
-
-  </main>
-
-  <script>
-    // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
-    document.addEventListener("DOMContentLoaded", function () {
-      const token = localStorage.getItem("token");
-      if (token) {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        const username = payload.username;
-        document.getElementById("username-display").textContent = `${username}님!`;
-        document.getElementById("guest-buttons").classList.add("hidden");
-        document.getElementById("user-buttons").classList.remove("hidden");
+      function logout() {
+        localStorage.removeItem('token');
+        alert('로그아웃 되었습니다!');
+        location.reload();
       }
-    });
+      // flatpickr 초기화
+      flatpickr('#calendar', {
+        defaultDate: new Date(),
+        dateFormat: 'Y-m-d',
+        locale: 'ko',
+        inline: true,
+        disableMobile: true,
+        minDate: 'today',
+        onChange: function (selectedDates, dateStr) {
+          if (selectedDates.length > 0) {
+            updateTimeDropdownFromDB(dateStr);
+          }
+        },
+      });
 
-    function logout() {
-      localStorage.removeItem("token");
-      alert("로그아웃 되었습니다!");
-      location.reload();
-    }
-    // flatpickr 초기화
-    flatpickr("#calendar", {
-      defaultDate: new Date(),
-      dateFormat: "Y-m-d",
-      locale: "ko",
-      inline: true,
-      disableMobile: true,
-      minDate: 'today',
-      onChange: function (selectedDates, dateStr) {
-        if (selectedDates.length > 0) {
-          // 선택한 날짜에 대해 예약된 시작 시간을 DB에서 가져와 드롭다운 업데이트
+      document
+        .getElementById('recruitButton')
+        .addEventListener('click', function () {
+          // 폼 요소 값 읽기
+          const timeStart = document.getElementById('timeStart').value;
+          const timeEnd = document.getElementById('timeEnd').value;
+          const memo = document.getElementById('memo').value;
+          const maxPlayers = document.getElementById('maxPlayers').value;
+          const courtType = document.querySelector(
+            'input[name="court"]:checked'
+          ).value;
+
+          // flatpickr 캘린더에서 선택한 날짜
+          const calendarInstance =
+            document.getElementById('calendar')._flatpickr;
+          if (
+            !calendarInstance ||
+            calendarInstance.selectedDates.length === 0
+          ) {
+            alert('날짜를 선택하세요!');
+            return;
+          }
+          const selectedDate = calendarInstance.selectedDates[0];
+          const dateStr = calendarInstance.formatDate(selectedDate, 'Y-m-d');
+
+          const token = localStorage.getItem('token');
+          if (!token) {
+            alert('로그인이 필요합니다!');
+            return;
+          }
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const creator_id = payload.user_id; // creator_id
+
+          const matchData = {
+            creator_id: creator_id,
+            memo: memo,
+            date: dateStr,
+            time_start: timeStart,
+            time_end: timeEnd,
+            court_type: courtType,
+            max_players: maxPlayers,
+          };
+
+          fetch('/create_match', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(matchData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.match_id) {
+                alert('모집 등록 성공!');
+                // 예약 생성 후 예약 현황 페이지로 리다이렉트
+                window.location.href = '/reservations';
+              } else {
+                alert('등록 실패: ' + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error('에러:', error);
+              alert('등록 중 에러 발생');
+            });
+        });
+
+      // 시작 시간 변경 시 종료 시간을 자동으로 1시간 뒤로 설정
+      // 시작시간 변경 시 종료시간 옵션 업데이트 (종료시간은 시작시간 +1, +2시간으로 계산; 24시 넘어도 그대로 표시)
+      document
+        .getElementById('timeStart')
+        .addEventListener('change', function () {
+          const selectedStart = this.value; // 예: "23:00"
+          const [hour, minute] = selectedStart.split(':').map(Number);
+
+          // 종료시간 옵션 계산: 1시간 뒤, 2시간 뒤
+          const option1Hour = hour + 1;
+          const option2Hour = hour + 2;
+
+          // 항상 그대로 표시 (예: 25:00, 26:00 등)
+          const formatTime = (hr, min) => {
+            return `${String(hr).padStart(2, '0')}:${String(min).padStart(
+              2,
+              '0'
+            )}`;
+          };
+
+          const formattedOption1 = formatTime(option1Hour, minute);
+          const formattedOption2 = formatTime(option2Hour, minute);
+
+          // 종료시간 select 요소 업데이트
+          const timeEndSelect = document.getElementById('timeEnd');
+          timeEndSelect.innerHTML = ''; // 기존 옵션 삭제
+
+          const opt1 = document.createElement('option');
+          opt1.value = formattedOption1;
+          opt1.text = formattedOption1;
+          timeEndSelect.appendChild(opt1);
+
+          const opt2 = document.createElement('option');
+          opt2.value = formattedOption2;
+          opt2.text = formattedOption2;
+          timeEndSelect.appendChild(opt2);
+        });
+
+      // 페이지 로드시 기본 날짜(오늘)에 대해 updateTimeDropdownFromDB 호출
+      document.addEventListener('DOMContentLoaded', function () {
+        const calendarInstance = document.getElementById('calendar')._flatpickr;
+        if (calendarInstance && calendarInstance.selectedDates.length > 0) {
+          const dateStr = calendarInstance.formatDate(
+            calendarInstance.selectedDates[0],
+            'Y-m-d'
+          );
           updateTimeDropdownFromDB(dateStr);
         }
-      },
-    });
+      });
 
-    document.getElementById('recruitButton').addEventListener('click', function () {
-      // 폼 요소 값 읽기
-      const timeStart = document.getElementById('timeStart').value;
-      const timeEnd = document.getElementById('timeEnd').value;
-      const memo = document.getElementById('memo').value;
-      const maxPlayers = document.getElementById('maxPlayers').value;
-      const courtType = document.querySelector('input[name="court"]:checked').value;
+      // 예약된 시작 시간을 DB에서 조회하여 드롭다운 업데이트 함수
+      function updateTimeDropdownFromDB(dateStr) {
+        fetch(`/reserved_times?date=${dateStr}`)
+          .then((response) => response.json())
+          .then((data) => {
+            const reserved = data.reserved || [];
+            const timeStartSelect = document.getElementById('timeStart');
+            const today = new Date();
+            // 로컬 날짜를 YYYY-MM-DD 형식으로 생성
+            const todayStr = `${today.getFullYear()}-${String(
+              today.getMonth() + 1
+            ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-      // flatpickr 캘린더에서 선택한 날짜
-      const calendarInstance = document.getElementById('calendar')._flatpickr;
-      if (!calendarInstance || calendarInstance.selectedDates.length === 0) {
-        alert("날짜를 선택하세요!");
-        return;
-      }
-      const selectedDate = calendarInstance.selectedDates[0];
-      const dateStr = calendarInstance.formatDate(selectedDate, "Y-m-d");
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("로그인이 필요합니다!");
-        return;
-      }
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const creator_id = payload.user_id;  // creator_id
-
-      const matchData = {
-        creator_id: creator_id,
-        memo: memo,
-        date: dateStr,
-        time_start: timeStart,
-        time_end: timeEnd,
-        court_type: courtType,
-        max_players: maxPlayers
-      };
-
-      fetch('/create_match', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(matchData)
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.match_id) {
-            alert("모집 등록 성공!");
-            // 예약 생성 후 예약 현황 페이지로 리다이렉트
-            window.location.href = '/reservations';
-          } else {
-            alert("등록 실패: " + data.message);
-          }
-        })
-        .catch(error => {
-          console.error("에러:", error);
-          alert("등록 중 에러 발생");
-        });
-    });
-
-
-
-    // 시작 시간 변경 시 종료 시간을 자동으로 1시간 뒤로 설정
-    document.getElementById("timeStart").addEventListener("change", function () {
-      const selectedStart = this.value;  // 예: "10:00"
-      const [hour, minute] = selectedStart.split(":").map(Number);
-
-      // 종료시간 옵션 계산 (1시간 뒤, 2시간 뒤)
-      let option1Hour = hour + 1;
-      let option2Hour = hour + 2;
-
-      // 종료 시간이 너무 늦어지지 않도록 (예: 22시를 넘지 않게) 제한할 수 있음
-      const MAX_HOUR = 22;
-      if (option1Hour > MAX_HOUR) option1Hour = MAX_HOUR;
-      if (option2Hour > MAX_HOUR) option2Hour = MAX_HOUR;
-
-      // 두 자리 문자열로 변환
-      const option1 = `${String(option1Hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-      const option2 = `${String(option2Hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-
-      // 종료시간 select 요소 업데이트
-      const timeEndSelect = document.getElementById("timeEnd");
-      timeEndSelect.innerHTML = ''; // 기존 옵션 삭제
-
-      const opt1 = document.createElement("option");
-      opt1.value = option1;
-      opt1.text = option1;
-      timeEndSelect.appendChild(opt1);
-
-      const opt2 = document.createElement("option");
-      opt2.value = option2;
-      opt2.text = option2;
-      timeEndSelect.appendChild(opt2);
-    });
-
-    // 예약된 시작 시간을 DB에서 조회하여 드롭다운 업데이트 함수
-    function updateTimeDropdownFromDB(dateStr) {
-      fetch(`/reserved_times?date=${dateStr}`)
-        .then(response => response.json())
-        .then(data => {
-          const reserved = data.reserved || [];
-          const timeStartSelect = document.getElementById("timeStart");
-          // 각 옵션을 순회하며 예약된 시간이면 disable 처리
-          for (let option of timeStartSelect.options) {
-            if (reserved.includes(option.value)) {
-              option.disabled = true;
-              option.style.display = "none"; // 혹은 단순히 disabled 속성만 줄 수도 있음
-            } else {
-              option.disabled = false;
-              option.style.display = "block";
+            for (let option of timeStartSelect.options) {
+              let disable = false;
+              // 예약되어 있는 시간이면 disable
+              if (reserved.includes(option.value)) {
+                disable = true;
+              }
+              // 당일 예약 시, 현재시간보다 이전 옵션 disable
+              if (dateStr === todayStr) {
+                const [optionHour, optionMinute] = option.value
+                  .split(':')
+                  .map(Number);
+                const optionMinutes = optionHour * 60 + optionMinute;
+                if (optionMinutes <= currentMinutes) {
+                  disable = true;
+                }
+              }
+              option.disabled = disable;
+              option.style.display = disable ? 'none' : 'block';
             }
-          }
-        })
-        .catch(err => {
-          console.error("예약된 시간 조회 실패:", err);
-        });
-    }
-  </script>
-</body>
-
+          })
+          .catch((err) => {
+            console.error('예약된 시간 조회 실패:', err);
+          });
+      }
+    </script>
+  </body>
 </html>
