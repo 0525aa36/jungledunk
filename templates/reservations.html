@@ -351,31 +351,6 @@
           .setAttribute('data-id', reservationId);
       }
 
-      // function openCancelPopup(matchId, reservationId) {
-      //   if (confirm('정말 예약을 취소하시겠습니까?')) {
-      //     // '네'를 선택하면 취소 API 호출
-      //     fetch(`/cancel_reservation/${reservationId}`, {
-      //       method: 'POST',
-      //     })
-      //       .then((response) => response.json())
-      //       .then((data) => {
-      //         if (data.message === '예약 취소 성공!') {
-      //           alert('예약이 취소되었습니다.');
-      //           // 예약 목록 새로고침
-      //           fetchReservations();
-      //         } else {
-      //           alert('예약 취소 실패: ' + data.message);
-      //         }
-      //       })
-      //       .catch((error) => {
-      //         console.error('예약 취소 중 오류 발생:', error);
-      //         alert('예약 취소 중 오류가 발생했습니다.');
-      //       });
-      //   } else {
-      //     // '아니오' 선택 시 아무런 동작 없이 종료
-      //   }
-      // }
-
       function closeCancelPopup() {
         document.getElementById('cancelPopup').classList.add('hidden');
       }
