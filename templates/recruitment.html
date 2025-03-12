@@ -76,17 +76,40 @@
               <option value="11:00">11:00</option>
               <option value="11:30">11:30</option>
               <option value="12:00">12:00</option>
-              <!-- 추가 옵션 -->
+              <option value="12:30">12:30</option>
+              <option value="13:00">13:00</option>
+              <option value="13:30">13:30</option>
+              <option value="14:00">14:00</option>
+              <option value="14:30">14:30</option>
+              <option value="15:00">15:00</option>
+              <option value="15:30">15:30</option>
+              <option value="16:00">16:00</option>
+              <option value="16:30">16:30</option>
+              <option value="17:00">17:00</option>
+              <option value="17:30">17:30</option>
+              <option value="18:00">18:00</option>
+              <option value="18:30">18:30</option>
+              <option value="19:00">19:00</option>
+              <option value="19:30">19:30</option>
+              <option value="20:00">20:00</option>
             </select>
+            
             <span class="self-center">~</span>
             <select id="timeEnd" class="border rounded px-2 py-1 w-1/2">
               <option value="11:00">11:00</option>
               <option value="11:30">11:30</option>
               <option value="12:00">12:00</option>
-              <option value="12:30">12:30</option>
               <option value="13:00">13:00</option>
-              <!-- 나머지 옵션들 추가 -->
+              <option value="14:00">14:00</option>
+              <option value="15:00">15:00</option>
+              <option value="16:00">16:00</option>
+              <option value="17:00">17:00</option>
+              <option value="18:00">18:00</option>
+              <option value="19:00">19:00</option>
+              <option value="20:00">20:00</option>
+              <option value="21:00">21:00</option>
             </select>
+            
           </div>
         </div>
 
@@ -169,95 +192,96 @@
     });
 
     document.getElementById('recruitButton').addEventListener('click', function () {
-  // 폼 요소 값 읽기
-  const timeStart = document.getElementById('timeStart').value;
-  const timeEnd = document.getElementById('timeEnd').value;
-  const memo = document.getElementById('memo').value;
-  const maxPlayers = document.getElementById('maxPlayers').value;
-  const courtType = document.querySelector('input[name="court"]:checked').value;
+      // 폼 요소 값 읽기
+      const timeStart = document.getElementById('timeStart').value;
+      const timeEnd = document.getElementById('timeEnd').value;
+      const memo = document.getElementById('memo').value;
+      const maxPlayers = document.getElementById('maxPlayers').value;
+      const courtType = document.querySelector('input[name="court"]:checked').value;
 
-  // flatpickr 캘린더에서 선택한 날짜
-  const calendarInstance = document.getElementById('calendar')._flatpickr;
-  if (!calendarInstance || calendarInstance.selectedDates.length === 0) {
-    alert("날짜를 선택하세요!");
-    return;
-  }
-  const selectedDate = calendarInstance.selectedDates[0];
-  const dateStr = calendarInstance.formatDate(selectedDate, "Y-m-d");
-
-  // JWT 토큰에서 creator 정보 (_id 사용)
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("로그인이 필요합니다!");
-    return;
-  }
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  const creator_id = payload.user_id;  // creator_id 변수 선언
-
-  // POST할 데이터 구성
-  const matchData = {
-    creator_id: creator_id,  // 이제 creator_id가 정의됨
-    memo: memo,
-    date: dateStr,
-    time_start: timeStart,
-    time_end: timeEnd,
-    court_type: courtType,
-    max_players: maxPlayers
-  };
-
-  fetch('/create_match', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(matchData)
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.match_id) {
-        alert("모집 등록 성공!");
-        // 필요에 따라 페이지 이동 또는 UI 갱신 처리
-      } else {
-        alert("등록 실패: " + data.message);
+      // flatpickr 캘린더에서 선택한 날짜
+      const calendarInstance = document.getElementById('calendar')._flatpickr;
+      if (!calendarInstance || calendarInstance.selectedDates.length === 0) {
+        alert("날짜를 선택하세요!");
+        return;
       }
-    })
-    .catch(error => {
-      console.error("에러:", error);
-      alert("등록 중 에러 발생");
+      const selectedDate = calendarInstance.selectedDates[0];
+      const dateStr = calendarInstance.formatDate(selectedDate, "Y-m-d");
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("로그인이 필요합니다!");
+        return;
+      }
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const creator_id = payload.user_id;  // creator_id
+
+      const matchData = {
+        creator_id: creator_id,
+        memo: memo,
+        date: dateStr,
+        time_start: timeStart,
+        time_end: timeEnd,
+        court_type: courtType,
+        max_players: maxPlayers
+      };
+
+      fetch('/create_match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(matchData)
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.match_id) {
+            alert("모집 등록 성공!");
+            // 예약 생성 후 예약 현황 페이지로 리다이렉트
+            window.location.href = '/reservations';
+          } else {
+            alert("등록 실패: " + data.message);
+          }
+        })
+        .catch(error => {
+          console.error("에러:", error);
+          alert("등록 중 에러 발생");
+        });
     });
-});
+
 
 
     // 시작 시간 변경 시 종료 시간을 자동으로 1시간 뒤로 설정
     document.getElementById("timeStart").addEventListener("change", function () {
       const selectedStart = this.value;  // 예: "10:00"
       const [hour, minute] = selectedStart.split(":").map(Number);
-      let nextHour = hour + 1;
-      // 만약 nextHour가 20시를 넘는다면 마지막 시간인 20:00으로 설정 (또는 원하는 로직 적용)
-      if (nextHour > 20) {
-        nextHour = 20;
-      }
-      // 두 자리 형식으로 변환
-      const nextHourStr = nextHour.toString().padStart(2, "0");
-      const newEndTime = `${nextHourStr}:${minute.toString().padStart(2, "0")}`;
 
-      // 종료 시간 셀렉트 요소에서 newEndTime 값이 존재하면 선택
+      // 종료시간 옵션 계산 (1시간 뒤, 2시간 뒤)
+      let option1Hour = hour + 1;
+      let option2Hour = hour + 2;
+
+      // 종료 시간이 너무 늦어지지 않도록 (예: 22시를 넘지 않게) 제한할 수 있음
+      const MAX_HOUR = 22;
+      if (option1Hour > MAX_HOUR) option1Hour = MAX_HOUR;
+      if (option2Hour > MAX_HOUR) option2Hour = MAX_HOUR;
+
+      // 두 자리 문자열로 변환
+      const option1 = `${String(option1Hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      const option2 = `${String(option2Hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+      // 종료시간 select 요소 업데이트
       const timeEndSelect = document.getElementById("timeEnd");
-      let found = false;
-      for (let option of timeEndSelect.options) {
-        if (option.value === newEndTime) {
-          timeEndSelect.value = newEndTime;
-          found = true;
-          break;
-        }
-      }
-      // 만약 해당 옵션이 없다면, 기본값으로 newEndTime을 추가할 수도 있음
-      if (!found) {
-        const newOption = document.createElement("option");
-        newOption.value = newEndTime;
-        newOption.text = newEndTime;
-        timeEndSelect.appendChild(newOption);
-        timeEndSelect.value = newEndTime;
-      }
+      timeEndSelect.innerHTML = ''; // 기존 옵션 삭제
+
+      const opt1 = document.createElement("option");
+      opt1.value = option1;
+      opt1.text = option1;
+      timeEndSelect.appendChild(opt1);
+
+      const opt2 = document.createElement("option");
+      opt2.value = option2;
+      opt2.text = option2;
+      timeEndSelect.appendChild(opt2);
     });
+
     // 예약된 시작 시간을 DB에서 조회하여 드롭다운 업데이트 함수
     function updateTimeDropdownFromDB(dateStr) {
       fetch(`/reserved_times?date=${dateStr}`)
