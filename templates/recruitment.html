@@ -61,17 +61,22 @@
     <!-- 모집하기 폼 -->
     <!-- recruitment.html (모집하기 폼 부분 예시) -->
     <section class="w-full max-w-lg bg-white p-6 rounded shadow mb-6">
-      <!-- 캘린더 섹션은 위쪽에 위치 -->
-      <section class="w-full max-w-lg bg-white p-6 rounded shadow mb-6">
         <!-- 캘린더 섹션 -->
         <section class="mb-6">
-          <h2 class="text-xl font-bold mb-4">날짜 선택</h2>
-          <div id="calendar"></div>
+            <h2 class="text-xl font-bold mb-4">날짜 선택</h2>
+            <div class="flex justify-center">
+                <div id="calendar"></div>
+            </div>
         </section>
+        
+    
 
         <!-- 이용시간 -->
         <div class="mb-4">
-          <label class="block font-semibold mb-1">이용시간</label>
+          <label class="block font-semibold mb-1">
+            이용시간
+            <span class="text-red-500 text-xs ml-2">예약은 1~2시간만 가능합니다</span>
+          </label>
           <div class="flex space-x-2">
             <select id="timeStart" class="border rounded px-2 py-1 w-1/2">
               <option value="10:00">10:00</option>

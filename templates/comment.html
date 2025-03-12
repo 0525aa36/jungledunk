@@ -16,11 +16,11 @@
         <!-- 로고 -->
         <div class="mb-4">
             <a href="/">
-              <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-                   class="h-20 w-auto mx-auto" />
+                <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
+                    class="h-20 w-auto mx-auto" />
             </a>
-          </div>
-          
+        </div>
+
         <!-- 로그인 상태에 따른 버튼 -->
         <div id="nav-center" class="flex items-center space-x-2 mb-8">
             <!-- 게스트 상태 -->
@@ -38,23 +38,25 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 매치 상세 정보 영역 -->
     <main class="flex-1 flex flex-col items-center mt-8 px-4 w-full">
         <!-- 🔹 반응형 적용: 데스크탑에서 중앙 정렬 -->
         <section class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mx-auto">
             <div class="mb-4 text-center md:text-left">
-                <h2 id="matchTime" class="text-xl md:text-2xl font-bold">10:00 ~ 11:30</h2>
-                <p id="matchParticipants" class="mt-2 text-base md:text-lg">
-                    인원: <span class="font-semibold">3/6</span>
-                </p>
-                <p id="matchMemo" class="mt-2 text-sm md:text-base">#풀코트 #먹고음료내기</p>
+                <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
+                    ⏰ <span id="matchTime">00:00 ~ 00:00</span>
+                </div>
+                <div class="w-2/4 text-base text-gray-700 ml-4 text-left">
+                    <p class="font-semibold">👥 인원: <span id="matchParticipants">0 / 0</span></p>
+                    <p class="text-gray-600">🏀 <span id="matchMemo">#매치 정보</span></p>
+                    <p class="text-sm text-gray-500 font-medium">📌 예약자: <span id="matchCreator">관리자</span></p>
+                </div>
             </div>
             <!-- 🔹 신청하기 버튼을 가운데 정렬 & 크기 자동 조정 -->
             <div class="flex justify-center">
-                <button id="applyButton" 
-                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
-                        w-full sm:w-auto min-w-[120px] max-w-[200px]">
+                <button id="applyButton" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
+                        w-full sm:w-auto min-w-[80px] max-w-[110px]">
                     신청하기
                 </button>
             </div>
@@ -71,11 +73,9 @@
 
             <!-- 🔹 입력 버튼 크기를 절반으로 축소 & 오른쪽 정렬 유지 -->
             <div class="flex space-x-2">
-                <input type="text" id="commentInput" 
-                    class="flex-1 border rounded px-3 py-2 text-sm md:text-base" 
+                <input type="text" id="commentInput" class="flex-1 border rounded px-3 py-2 text-sm md:text-base"
                     placeholder="댓글을 입력하세요." />
-                <button onclick="addComment()" 
-                    class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 
+                <button onclick="addComment()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 
                         w-full sm:w-auto min-w-[60px] max-w-[100px]">
                     입력
                 </button>
@@ -96,6 +96,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- 신청 완료 팝업 -->
     <div id="successPopup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
@@ -131,37 +132,36 @@
 
         // 예약 신청 함수 (신청 버튼 클릭 시 실행)
         // 예약 신청 함수
-function applyMatch(matchId, currentParticipants, maxParticipants) {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        window.location.href = '/login';
-        return;
-    }
+        function applyMatch(matchId, currentParticipants, maxParticipants) {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
 
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const user_id = payload.user_id;  // _id 값을 사용
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const user_id = payload.user_id;  // _id 값을 사용
 
-    fetch('/create_reservation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ match_id: String(matchId), user_id: user_id })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === '예약 신청이 완료되었습니다!') {
-            openSuccessPopup();
-            loadMatchDetails();  // 예약 인원 업데이트
-        } else {
-            alert(data.message);
+            fetch('/create_reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ match_id: String(matchId), user_id: user_id })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === '예약 신청이 완료되었습니다!') {
+                        openSuccessPopup();
+                        loadMatchDetails();  // 예약 인원 업데이트
+                    } else if (data.message === '예약 신청이 불가능합니다. 이미 인원이 다 찼습니다.') {
+                        openFullPopup();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("예약 신청 중 오류 발생:", error);
+                });
         }
-    })
-    .catch(error => {
-        console.error("예약 신청 중 오류 발생:", error);
-    });
-}
-
-
-
 
 
         // 댓글 불러오기 함수
@@ -243,47 +243,50 @@ function applyMatch(matchId, currentParticipants, maxParticipants) {
 
         // 특정 매치 정보를 불러와 화면에 표시
         function loadMatchDetails() {
-    const matchId = getMatchIdFromUrl();
-    if (!matchId) {
-        alert("잘못된 접근입니다. match_id가 없습니다.");
-        return;
-    }
-
-    fetch(`/get_match?match_id=${matchId}`)
-        .then(response => response.json())
-        .then(match => {
-            if (match.message) {
-                alert(match.message);
+            const matchId = getMatchIdFromUrl();
+            if (!matchId) {
+                alert("잘못된 접근입니다. match_id가 없습니다.");
                 return;
             }
 
-            // HTML 요소 업데이트
-            document.getElementById("matchTime").innerText = `${match.time_start} ~ ${match.time_end}`;
-            document.getElementById("matchParticipants").innerHTML = `인원: <span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
-            document.getElementById("matchMemo").innerText = `#${match.court_type} #${match.memo}`;
+            fetch(`/get_match?match_id=${matchId}`)
+                .then(response => response.json())
+                .then(match => {
+                    if (match.message) {
+                        alert(match.message);
+                        return;
+                    }
 
-            // JWT 토큰에서 현재 사용자 정보 추출
-            const token = localStorage.getItem("token");
-            let currentUserId = null;
-            if (token) {
-                const payload = JSON.parse(atob(token.split(".")[1]));
-                currentUserId = payload.user_id;
-            }
+                    // HTML 요소 업데이트
+                    document.getElementById("matchTime").innerText = `${match.time_start} ~ ${match.time_end}`;
+                    document.getElementById("matchParticipants").innerHTML = ` <span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
+                    document.getElementById("matchMemo").innerText = `#${match.court_type} #${match.memo}`;
+                    // 추가: 예약자(매치를 만든 사람)의 이름 업데이트
+                    document.getElementById("matchCreator").innerText = match.creator_name;
 
-            const applyButton = document.getElementById("applyButton");
-            if (currentUserId && match.creator_id === currentUserId) {
-                // 매치 생성자라면 신청하기 버튼 숨김
-                applyButton.style.display = "none";
-            } else {
-                // 다른 사용자는 신청 가능하도록 버튼 활성화
-                applyButton.style.display = "block";
-                applyButton.setAttribute("onclick", `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`);
-            }
-        })
-        .catch(error => {
-            console.error("❌ 매치 데이터를 불러오는 중 오류 발생:", error);
-        });
-}
+                    // JWT 토큰에서 현재 사용자 정보 추출
+                    const token = localStorage.getItem("token");
+                    let currentUserId = null;
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        currentUserId = payload.user_id;
+                    }
+
+                    const applyButton = document.getElementById("applyButton");
+                    if (currentUserId && match.creator_id === currentUserId) {
+                        // 매치 생성자라면 신청하기 버튼 숨김
+                        applyButton.style.display = "none";
+                    } else {
+                        // 다른 사용자는 신청 가능하도록 버튼 활성화
+                        applyButton.style.display = "block";
+                        applyButton.setAttribute("onclick", `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`);
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ 매치 데이터를 불러오는 중 오류 발생:", error);
+                });
+        }
+
 
 
 
@@ -307,7 +310,11 @@ function applyMatch(matchId, currentParticipants, maxParticipants) {
             loadMatchDetails();  // 매치 정보 불러오기
             loadComments();  // 🚀 페이지 로드 시 댓글 불러오기 추가
         });
-
+        function logout() {
+        localStorage.removeItem('token'); // JWT 토큰 삭제
+        alert('로그아웃 되었습니다!');
+        window.location.href = '/'; // index.html로 이동
+      }
     </script>
 </body>
 

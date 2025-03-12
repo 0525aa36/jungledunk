@@ -1,26 +1,24 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>예약 시스템</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
 
-  <body class="bg-gray-100 flex justify-center items-center min-h-screen">
-    <div class="w-full max-w-md p-6">
-      <!-- 상단 영역: 로고 + 네비게이션 -->
-      <div class="flex flex-col items-center pt-8">
-        <!-- 로고 -->
-        <div class="mb-4">
-          <a href="/">
-            <img
-              src="{{ url_for('static', filename='jungledunk.png') }}"
-              alt="Jungle Dunk Logo"
-              class="h-20 w-auto mx-auto"
-            />
-          </a>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>예약 시스템</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+  <div class="w-full max-w-md p-6">
+    <!-- 상단 영역: 로고 + 네비게이션 -->
+    <div class="flex flex-col items-center pt-8">
+      <!-- 로고 -->
+      <div class="mb-4">
+        <a href="/">
+          <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
+            class="h-20 w-auto mx-auto" />
+        </a>
+      </div>
 
         <!-- 로그인 상태에 따른 버튼 -->
         <div id="nav-center" class="flex items-center space-x-2 mb-8">
@@ -230,73 +228,69 @@
       </div>
     </div>
 
-    <script>
-      let reservationsData = []; // 전체 예약 데이터 저장
-      let currentPage = 1;
-      const itemsPerPage = 3;
-      let currentUserId = ''; // 전역 변수에 현재 사용자 아이디 저장
 
-      // 페이지를 변경하는 함수
-      function changePage(page) {
-        currentPage = page;
-        renderReservationsPage(currentPage);
+  <script>
+    function navigateIfLoggedIn(targetUrl) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        window.location.href = targetUrl;
+      } else {
+        window.location.href = '/login';
       }
+    }
+    let reservationsData = []; // 전체 예약 데이터 저장
+    let currentPage = 1;
+    const itemsPerPage = 3;
+    let currentUserId = ""; // 전역 변수에 현재 사용자 아이디 저장
 
-      // 현재 페이지에 해당하는 예약 데이터를 렌더링하고 페이지네이션 컨트롤 추가
-      function renderReservationsPage(page) {
-        const container = document.getElementById('reservations-container');
-        let html = '';
-        const totalPages = Math.ceil(reservationsData.length / itemsPerPage);
+    // 페이지를 변경하는 함수
+    function changePage(page) {
+      currentPage = page;
+      renderReservationsPage(currentPage);
+    }
 
-        if (reservationsData.length === 0) {
-          html =
-            '<p class="text-center text-gray-500">예약 내역이 없습니다.</p>';
-        } else {
-          const startIndex = (page - 1) * itemsPerPage;
-          const endIndex = startIndex + itemsPerPage;
-          const pageReservations = reservationsData.slice(startIndex, endIndex);
+    // 현재 페이지에 해당하는 예약 데이터를 렌더링하고 페이지네이션 컨트롤 추가
+    function renderReservationsPage(page) {
+      const container = document.getElementById("reservations-container");
+      let html = "";
+      const totalPages = Math.ceil(reservationsData.length / itemsPerPage);
 
-          pageReservations.forEach((res) => {
-            const match = res.match;
-            html += `
-          <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
-            <div class="w-1/4 text-left">
-              <p class="text-sm text-gray-500">날짜: ${match.date}</p>
-              <p class="text-lg font-semibold text-gray-800">
-                ${match.time_start} ~ ${match.time_end}
-              </p>
-            </div>
-            <div class="w-2/4 text-sm text-gray-700">
-              <p>인원 : ${match.current_players} / ${match.max_players}</p>
-              <p>#${match.court_type} #${match.memo}</p>
-              <p class="text-xs text-gray-500">예약자: ${match.creator_name}</p>
-            </div>
-            <div class="w-1/4 flex flex-col items-end space-y-2">
-              ${
-                match.creator_id === currentUserId
-                  ? `<button onclick="openPopup('${match._id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">삭제하기</button>
-                   <a href="/player_list/${match._id}" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">예약자 명단</a>`
-                  : `<button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">취소하기</button>`
-              }
-            </div>
+      if (reservationsData.length === 0) {
+        html = '<p class="text-center text-gray-500">예약 내역이 없습니다.</p>';
+      } else {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageReservations = reservationsData.slice(startIndex, endIndex);
+
+        pageReservations.forEach(res => {
+          const match = res.match;
+          html += `
+        <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
+          <!-- 왼쪽 상세 정보: 클릭하면 댓글 페이지로 이동 -->
+          <div class="flex-grow cursor-pointer" onclick="navigateToComment('${match.match_id}')">
+            <p class="text-sm text-gray-500">날짜: ${match.date}</p>
+            <p class="text-lg font-semibold text-gray-800">
+              ${match.time_start} ~ ${match.time_end}
+            </p>
+            <p class="text-sm text-gray-700">인원: ${match.current_players} / ${match.max_players}</p>
+            <p class="text-xs text-gray-500">예약자: ${match.creator_name}</p>
           </div>
-          `;
-          });
+          <!-- 오른쪽 버튼 영역 -->
+          <div class="w-1/4 flex flex-col items-end space-y-2">
+            ${match.creator_id === currentUserId
+              ? `<button onclick="openPopup('${match._id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">삭제하기</button>
+                 <a href="/player_list/${match._id}" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">예약자 명단</a>`
+              : `<button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">취소하기</button>`
+            }
+          </div>
+        </div>
+      `;
+        });
 
-          // 페이지네이션 컨트롤 추가
-          html += `<div class="mt-4 flex justify-center space-x-2">`;
-          if (page > 1) {
-            html += `<button onclick="changePage(${
-              page - 1
-            })" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">이전</button>`;
-          }
-          html += `<span class="px-3 py-1">Page ${page} of ${totalPages}</span>`;
-          if (page < totalPages) {
-            html += `<button onclick="changePage(${
-              page + 1
-            })" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">다음</button>`;
-          }
-          html += `</div>`;
+        // 페이지네이션 컨트롤 추가
+        html += `<div class="mt-4 flex justify-center space-x-2">`;
+        if (page > 1) {
+          html += `<button onclick="changePage(${page - 1})" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">이전</button>`;
         }
         container.innerHTML = html;
       }
@@ -354,6 +348,19 @@
         window.location.href = '/';
       }
 
+    function navigateToComment(matchId) {
+      navigateIfLoggedIn('/comment?match_id=' + matchId);
+    }
+
+    // 기존 fetchReservations 함수에서 AJAX로 예약 데이터를 받아오면 전역 변수에 저장 후 첫 페이지 렌더링
+    function fetchReservations() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
+    }
+
       function deleteReservation() {
         let reason = document.getElementById('deleteReason').value;
         if (reason.trim() === '') {
@@ -379,27 +386,21 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ reason: reason }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log("예약 데이터 응답:", data);
+          reservationsData = data.reservations || [];
+          currentUserId = data.current_user_id;
+          currentPage = 1;
+          renderReservationsPage(currentPage);
         })
-          .then(function (response) {
-            return response.json();
-          })
-          .then(function (data) {
-            // 로딩 팝업 닫기
-            document.getElementById('loadingPopup').classList.add('hidden');
-            if (data.message === '모집글 삭제 및 이메일 전송 성공!') {
-              showCustomAlert('삭제 후 안내메일 전송이 완료되었습니다.');
-              // 예약 목록 새로고침
-              fetchReservations();
-            } else {
-              showCustomAlert('삭제 실패: ' + data.message);
-            }
-          })
-          .catch(function (error) {
-            document.getElementById('loadingPopup').classList.add('hidden');
-            console.error('삭제 요청 중 오류 발생:', error);
-            showCustomAlert('삭제 요청 중 오류가 발생했습니다.');
-          });
-      }
+        .catch(error => {
+          console.error("예약 데이터를 불러오는 중 오류 발생:", error);
+          document.getElementById("reservations-container").innerHTML = '<p class="text-center text-red-500">예약 데이터를 불러오는 중 오류 발생</p>';
+        });
+    }
+        
 
       function openPopup(matchId) {
         // matchId를 confirmDelete 버튼의 data-id에 저장
@@ -425,6 +426,7 @@
               if (data.message === '예약 취소 성공!') {
                 showCustomAlert('예약이 취소되었습니다.');
                 fetchReservations();
+
               } else {
                 showCustomAlert('삭제 실패: ' + data.message);
               }
@@ -457,3 +459,4 @@
     </script>
   </body>
 </html>
+

@@ -1,86 +1,100 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-96">
-        <div class="mb-4">
-            <a href="/">
-              <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-                   class="h-20 w-auto mx-auto" />
-            </a>
-          </div>
-          
-        <h2 class="text-2xl font-bold mb-6 text-center">회원가입</h2>
-        <form id="registerForm" class="space-y-4">
-            <div>
-                <label class="block font-semibold">이메일</label>
-                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border rounded-lg">
-            </div>
-            <div>
-                <label class="block font-semibold">비밀번호</label>
-                <input type="password" id="password" name="password" required class="w-full px-4 py-2 border rounded-lg">
-            </div>
-            <div>
-                <label class="block font-semibold">사용자 이름</label>
-                <input type="text" id="username" name="username" required class="w-full px-4 py-2 border rounded-lg">
-            </div>
-            <div>
-                <label class="block font-semibold">전화번호</label>
-                <div class="flex space-x-2">
-                    <input type="text" value="010" readonly class="w-2/4 px-4 py-2 border rounded-lg text-center bg-gray-200">
-                    <input type="text" id="phone1" maxlength="4" required class="w-2/4 px-4 py-2 border rounded-lg text-center" oninput="moveFocus(this, 'phone2')">
-                    <input type="text" id="phone2" maxlength="4" required class="w-2/4 px-4 py-2 border rounded-lg text-center">
-                </div>
-            </div>
-            
-            <button type="submit" class="w-full bg-[#FF6A3B] text-white py-2 rounded-lg hover:bg-[#15857A]">회원가입</button>
-        </form>
-        <p id="message" class="text-center text-red-500 mt-4"></p>
-        <button onclick="location.href='/'" class="w-full bg-gray-500 text-white py-2 mt-4 rounded-lg hover:bg-gray-600">메인 페이지로</button>
+  <div class="bg-white p-8 rounded-xl shadow-lg w-96">
+    <div class="mb-4">
+      <a href="/">
+        <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
+             class="h-20 w-auto mx-auto" />
+      </a>
     </div>
+    
+    <h2 class="text-2xl font-bold mb-6 text-center">회원가입</h2>
+    <form id="registerForm" class="space-y-4">
+      <div>
+        <label class="block font-semibold">이메일</label>
+        <input type="email" id="email" name="email" required class="w-full px-4 py-2 border rounded-lg">
+      </div>
+      <div>
+        <label class="block font-semibold">비밀번호</label>
+        <input type="password" id="password" name="password" required class="w-full px-4 py-2 border rounded-lg">
+        <!-- 안내 문구만 표시 -->
+        <div id="passwordGuidelines" class="mt-1 text-xs text-gray-600">
+          비밀번호는 8글자 이상이어야 하며, 최소 1개의 특수기호(!@#$%^&* 등)를 포함해야 합니다.
+        </div>
+      </div>
+      <div>
+        <label class="block font-semibold">사용자 이름</label>
+        <input type="text" id="username" name="username" required class="w-full px-4 py-2 border rounded-lg">
+      </div>
+      <div>
+        <label class="block font-semibold">전화번호</label>
+        <div class="flex space-x-2">
+          <input type="text" value="010" readonly class="w-2/4 px-4 py-2 border rounded-lg text-center bg-gray-200">
+          <input type="text" id="phone1" maxlength="4" required class="w-2/4 px-4 py-2 border rounded-lg text-center" oninput="moveFocus(this, 'phone2')">
+          <input type="text" id="phone2" maxlength="4" required class="w-2/4 px-4 py-2 border rounded-lg text-center">
+        </div>
+      </div>
+      
+      <button type="submit" class="w-full bg-[#FF6A3B] text-white py-2 rounded-lg hover:bg-[#15857A]">회원가입</button>
+    </form>
+    <p id="message" class="text-center text-red-500 mt-4"></p>
+    <button onclick="location.href='/'" class="w-full bg-gray-500 text-white py-2 mt-4 rounded-lg hover:bg-gray-600">메인 페이지로</button>
+  </div>
 
-    <script>
-        function moveFocus(current, nextId) {
-            if (current.value.length >= current.maxLength) {
-                document.getElementById(nextId).focus();
-            }
-        }
+  <script>
+    function moveFocus(current, nextId) {
+      if (current.value.length >= current.maxLength) {
+        document.getElementById(nextId).focus();
+      }
+    }
 
-        document.getElementById('registerForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const phone1 = document.getElementById('phone1').value;
-            const phone2 = document.getElementById('phone2').value;
-            const password = document.getElementById('password').value;
+    document.getElementById('registerForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const phone1 = document.getElementById('phone1').value;
+      const phone2 = document.getElementById('phone2').value;
+      const password = document.getElementById('password').value;
 
-            const phone = `010-${phone1}-${phone2}`;
+      // 비밀번호 유효성 검사: 최소 8글자, 특수문자 1개 이상 포함
+      if (password.length < 8) {
+        document.getElementById('message').textContent = "비밀번호는 최소 8글자 이상이어야 합니다.";
+        return;
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        document.getElementById('message').textContent = "비밀번호에 최소 1개의 특수문자가 필요합니다.";
+        return;
+      }
 
-            fetch('/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, phone, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.token) {
-                    alert("회원가입이 완료되었습니다! 🎉 자동 로그인 후 이동합니다.");
-                    localStorage.setItem("token", data.token);
-                    window.location.href = "/";
-                } else {
-                    document.getElementById('message').textContent = data.message;
-                }
-            })
-            .catch(error => {
-                document.getElementById('message').textContent = '회원가입 실패';
-            });
-        });
-    </script>
+      const phone = `010-${phone1}-${phone2}`;
+
+      fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, phone, password })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.token) {
+              alert("회원가입이 완료되었습니다! 🎉 자동 로그인 후 이동합니다.");
+              localStorage.setItem("token", data.token);
+              window.location.href = "/";
+          } else {
+              document.getElementById('message').textContent = data.message;
+          }
+      })
+      .catch(error => {
+          document.getElementById('message').textContent = '회원가입 실패';
+      });
+    });
+  </script>
 </body>
 </html>
