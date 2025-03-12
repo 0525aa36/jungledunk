@@ -7,33 +7,32 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const token = localStorage.getItem("token");
+      document.addEventListener('DOMContentLoaded', function () {
+        const token = localStorage.getItem('token');
 
-            if (token) {
-                const payload = JSON.parse(atob(token.split(".")[1])); // JWT 토큰 디코딩
-                const username = payload.username;
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1])); // JWT 토큰 디코딩
+          const username = payload.username;
 
-                // 로그인된 사용자 이름을 네비게이션에 반영
-                document.getElementById("user-name").textContent = `${username}님`;
-            }
-        });
-
-        function logout() {
-            localStorage.removeItem("token");  // JWT 토큰 삭제
-            alert("로그아웃 되었습니다!");
-            window.location.href = "/";  // index.html로 이동
+          // 로그인된 사용자 이름을 네비게이션에 반영
+          document.getElementById('user-name').textContent = `${username}님`;
         }
-    </script>
+      });
 
+      function logout() {
+        localStorage.removeItem('token'); // JWT 토큰 삭제
+        alert('로그아웃 되었습니다!');
+        window.location.href = '/'; // index.html로 이동
+      }
+    </script>
   </head>
   <body class="bg-gray-100 flex justify-center items-center min-h-screen">
     <div class="w-full max-w-md p-6">
       <!-- 상단 네비게이션 -->
       <div class="text-right mb-4 text-gray-600">
         <a href="#" class="hover:underline">내 예약현황</a> |
-        <span>방호석님</span> |
-        <a href="#" class="hover:underline">로그아웃</a>
+        <span id="user-name">로그인이 되어있지 않습니다.</span> |
+        <a href="#" class="hover:underline" onclick="logout()">로그아웃</a>
       </div>
       <!-- 타이틀 -->
       <div
@@ -42,11 +41,10 @@
         예약자 명단
       </div>
 
-
       <div class="flex justify-between items-center mt-2">
         <p class="text-lg font-semibold text-gray-800">예약 인원</p>
         <p class="text-lg font-semibold text-gray-800">
-          {{ reservations|length }}/{{ match.max_players }}
+          {{ match.current_players }}/{{ match.max_players }}
         </p>
       </div>
 
