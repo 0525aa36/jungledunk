@@ -30,9 +30,12 @@
   <div class="flex flex-col items-center pt-8">
     <!-- 로고 -->
     <div class="mb-4">
-      <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-        class="h-20 w-auto mx-auto" />
+      <a href="/">
+        <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
+             class="h-20 w-auto mx-auto" />
+      </a>
     </div>
+    
     <!-- 로그인 상태에 따른 버튼 -->
     <div id="nav-center" class="flex items-center space-x-2 mb-8">
       <!-- 게스트 상태 -->
