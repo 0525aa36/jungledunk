@@ -20,71 +20,214 @@
         </a>
       </div>
 
-      <!-- 로그인 상태에 따른 버튼 -->
-      <div id="nav-center" class="flex items-center space-x-2 mb-8">
-        <!-- 게스트 상태 -->
-        <div id="guest-buttons" class="flex space-x-2">
-          <a href="/login" class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]">로그인</a>
-          <a href="/register" class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600">회원가입</a>
+        <!-- 로그인 상태에 따른 버튼 -->
+        <div id="nav-center" class="flex items-center space-x-2 mb-8">
+          <!-- 게스트 상태 -->
+          <div id="guest-buttons" class="flex space-x-2">
+            <a
+              href="/login"
+              class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]"
+              >로그인</a
+            >
+            <a
+              href="/register"
+              class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+              >회원가입</a
+            >
+          </div>
+          <!-- 로그인 된 상태 -->
+          <div id="user-buttons" class="hidden flex items-center space-x-2">
+            <span
+              id="username-display"
+              class="text-sm font-bold text-gray-800"
+            ></span>
+            <a
+              href="/reservations"
+              class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm"
+              >내 예약현황</a
+            >
+            <button
+              onclick="logout()"
+              class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm"
+            >
+              로그아웃
+            </button>
+          </div>
         </div>
-        <!-- 로그인 된 상태 -->
-        <div id="user-buttons" class="hidden flex items-center space-x-2">
-          <span id="username-display" class="text-sm font-bold text-gray-800"></span>
-          <a href="/reservations"
-            class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm">내 예약현황</a>
-          <button onclick="logout()"
-            class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm">로그아웃</button>
+      </div>
+
+      <div
+        class="bg-gray-300 text-lg font-bold px-6 py-3 rounded-lg text-center"
+      >
+        내 예약현황
+      </div>
+
+      <!-- 예약 리스트 -->
+      <div id="reservations-container" class="mt-6 space-y-4">
+        {% if reservations %} {% for res in reservations %} {% set match =
+        res.match %}
+        <div
+          class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center"
+        >
+          <div class="w-1/4 text-left">
+            <p class="text-sm text-gray-500">날짜: {{ match.date }}</p>
+            <p class="text-lg font-semibold text-gray-800">
+              {{ match.time_start }} ~ {{ match.time_end }}
+            </p>
+          </div>
+
+          <div class="w-2/4 text-sm text-gray-700">
+            <p>인원 : {{ match.current_players }}/{{ match.max_players }}</p>
+            <p>#{{ match.court_type }} #{{ match.memo }}</p>
+            <p class="text-xs text-gray-500">
+              예약자: {{ match.creator_name }}
+            </p>
+          </div>
+          <div class="w-1/4 flex flex-col items-end space-y-2">
+            {% if match.creator_id == current_user_id %}openCancelPopup
+            <button
+              onclick="openPopup('{{ match._id }}')"
+              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition"
+            >
+              삭제하기
+            </button>
+            <a
+              href="/player_list/{{ match._id }}"
+              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition"
+            >
+              예약자 명단
+            </a>
+            {% else %}
+            <button
+              onclick="openCancelPopup('{{ match._id }}', '{{ res.reservation_id }}')"
+              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition"
+            >
+              취소하기
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <p class="text-center text-gray-500">예약 내역이 없습니다.</p>
+        {% endif %}
+      </div>
+
+      <!-- 삭제 확인 팝업 (삭제 사유 입력) -->
+      <div
+        id="popup"
+        class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+      >
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+          <p class="text-lg font-bold">정말 삭제하시겠습니까?</p>
+          <p class="text-m font-semibold">전체 참여자에게 삭제 사유와 함께</p>
+          <p class="text-m font-semibold">삭제 안내 메일이 발송됩니다.</p>
+          <textarea
+            id="deleteReason"
+            class="w-full border rounded-lg p-2 mt-2"
+            placeholder="삭제 사유를 입력하세요..."
+          ></textarea>
+          <div class="mt-4 flex justify-center space-x-4">
+            <button
+              id="confirmDelete"
+              onclick="deleteReservation()"
+              class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+            >
+              확인
+            </button>
+            <button
+              onclick="closePopup()"
+              class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 로딩 팝업 (이메일 전송 중 표시) -->
+      <div
+        id="loadingPopup"
+        class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+      >
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+          <p class="text-lg font-semibold">안내 메일 발송중입니다...</p>
+          <div class="flex justify-center mt-4">
+            <!-- Tailwind의 animate-spin을 사용한 스피너 -->
+            <div
+              class="w-6 h-6 border-4 border-blue-500 border-dashed rounded-full animate-spin"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 삭제 완료 팝업 -->
+      <div
+        id="confirmPopup"
+        class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+      >
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+          <p class="text-lg font-semibold">삭제되었습니다.</p>
+          <p class="text-sm text-gray-600 mt-2">삭제 사유:</p>
+          <p
+            id="deleteReasonText"
+            class="text-sm text-gray-800 font-medium mt-1"
+          ></p>
+          <div class="mt-4 flex justify-center">
+            <button
+              onclick="closeConfirmPopup()"
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 예약 취소 팝업 -->
+      <div
+        id="cancelPopup"
+        class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+      >
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+          <p class="text-lg font-semibold">정말 예약을 취소하시겠습니까?</p>
+          <div class="mt-4 flex justify-center space-x-4">
+            <!-- 취소 확인 버튼 -->
+            <button
+              id="confirmCancel"
+              class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+            >
+              확인
+            </button>
+            <!-- 취소 버튼 -->
+            <button
+              onclick="closeCancelPopup()"
+              class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 커스텀 알림 팝업 -->
+      <div
+        id="customAlertPopup"
+        class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+      >
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+          <p id="customAlertMessage" class="text-lg"></p>
+          <div class="mt-4 flex justify-center">
+            <button
+              onclick="closeCustomAlert()"
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              확인
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-gray-300 text-lg font-bold px-6 py-3 rounded-lg text-center">
-      내 예약현황
-    </div>
-
-    <!-- 예약 리스트 -->
-    <div id="reservations-container" class="mt-6 space-y-4">
-      {% if reservations %}
-      {% for res in reservations %}
-      {% set match = res.match %}
-      <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
-        <div class="w-1/4 text-left">
-          <p class="text-sm text-gray-500">날짜: {{ match.date }}</p>
-          <p class="text-lg font-semibold text-gray-800">
-            {{ match.time_start }} ~ {{ match.time_end }}
-          </p>
-        </div>
-
-        <div class="w-2/4 text-sm text-gray-700">
-          <p>인원 : {{ match.current_players }}/{{ match.max_players }}</p>
-          <p>#{{ match.court_type }} #{{ match.memo }}</p>
-          <p class="text-xs text-gray-500">예약자: {{ match.creator_name }}</p>
-        </div>
-        <div class="w-1/4 flex flex-col items-end space-y-2">
-          {% if match.creator_id == current_user_id %}openCancelPopup
-          <button onclick="openPopup('{{ match._id }}')"
-            class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
-            삭제하기
-          </button>
-          <a href="/player_list/{{ match._id }}"
-            class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
-            예약자 명단
-          </a>
-          {% else %}
-          <button onclick="openCancelPopup('{{ match._id }}', '{{ res.reservation_id }}')"
-            class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
-            취소하기
-          </button>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
-      {% else %}
-      <p class="text-center text-gray-500">예약 내역이 없습니다.</p>
-      {% endif %}
-    </div>
-
-  </div>
 
   <script>
     function navigateIfLoggedIn(targetUrl) {
@@ -149,24 +292,65 @@
         if (page > 1) {
           html += `<button onclick="changePage(${page - 1})" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">이전</button>`;
         }
-        html += `<span class="px-3 py-1">Page ${page} of ${totalPages}</span>`;
-        if (page < totalPages) {
-          html += `<button onclick="changePage(${page + 1})" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">다음</button>`;
-        }
-        html += `</div>`;
+        container.innerHTML = html;
       }
-      container.innerHTML = html;
-    }
+
+      // 기존 fetchReservations 함수에서 AJAX로 예약 데이터를 받아오면 전역 변수에 저장 후 첫 페이지 렌더링
+      function fetchReservations() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+        fetch('/api/reservations', {
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log('예약 데이터 응답:', data);
+            reservationsData = data.reservations || [];
+            currentUserId = data.current_user_id;
+            currentPage = 1;
+            renderReservationsPage(currentPage);
+          })
+          .catch((error) => {
+            console.error('예약 데이터를 불러오는 중 오류 발생:', error);
+            document.getElementById('reservations-container').innerHTML =
+              '<p class="text-center text-red-500">예약 데이터를 불러오는 중 오류 발생</p>';
+          });
+      }
+
+      // DOMContentLoaded 이벤트 후 실행 (기존 코드 유지)
+      document.addEventListener('DOMContentLoaded', function () {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const username = payload.username;
+        document.getElementById(
+          'username-display'
+        ).textContent = `${username}님!`;
+        document.getElementById('guest-buttons').classList.add('hidden');
+        document.getElementById('user-buttons').classList.remove('hidden');
+
+        // 예약 데이터를 AJAX로 불러오기
+        fetchReservations();
+      });
+
+      function logout() {
+        localStorage.removeItem('token');
+        showCustomAlert('로그아웃 되었습니다.');
+
+        window.location.href = '/';
+      }
 
     function navigateToComment(matchId) {
       navigateIfLoggedIn('/comment?match_id=' + matchId);
     }
-
-
-    function navigateToComment(matchId) {
-      navigateIfLoggedIn('/comment?match_id=' + matchId);
-    }
-
 
     // 기존 fetchReservations 함수에서 AJAX로 예약 데이터를 받아오면 전역 변수에 저장 후 첫 페이지 렌더링
     function fetchReservations() {
@@ -175,10 +359,33 @@
         window.location.href = "/login";
         return;
       }
-      fetch('/api/reservations', {
-        headers: {
-          'Authorization': 'Bearer ' + token
+    }
+
+      function deleteReservation() {
+        let reason = document.getElementById('deleteReason').value;
+        if (reason.trim() === '') {
+          showCustomAlert('삭제 사유를 입력해주세요.');
+          return;
         }
+        // confirmDelete 버튼에 저장된 matchId 가져오기
+        let matchId = document
+          .getElementById('confirmDelete')
+          .getAttribute('data-id');
+        if (!matchId) {
+          showCustomAlert('매치 ID가 없습니다..');
+          return;
+        }
+        // 기존 삭제 팝업을 닫고 로딩 팝업 표시
+        closePopup();
+        document.getElementById('loadingPopup').classList.remove('hidden');
+
+        // 서버의 /cancel_match/<matchId> 엔드포인트로 POST 요청
+        fetch(`/cancel_match/${matchId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ reason: reason }),
       })
         .then(response => response.json())
         .then(data => {
@@ -193,57 +400,63 @@
           document.getElementById("reservations-container").innerHTML = '<p class="text-center text-red-500">예약 데이터를 불러오는 중 오류 발생</p>';
         });
     }
+        
 
-    // 기존 openPopup, openCancelPopup 함수는 그대로 둡니다.
-    function openPopup(matchId) {
-      alert(`매치 삭제 기능 (ID: ${matchId})`);
-    }
+      function openPopup(matchId) {
+        // matchId를 confirmDelete 버튼의 data-id에 저장
+        document
+          .getElementById('confirmDelete')
+          .setAttribute('data-id', matchId);
+        // 팝업을 표시합니다.
+        document.getElementById('popup').classList.remove('hidden');
+      }
 
-    function openCancelPopup(matchId, reservationId) {
-      if (confirm("정말 예약을 취소하시겠습니까?")) {
-        fetch(`/cancel_reservation/${reservationId}`, {
-          method: 'POST'
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.message === "예약 취소 성공!") {
-              alert("예약이 취소되었습니다.");
-              fetchReservations();
-            } else {
-              alert("예약 취소 실패: " + data.message);
-            }
+      function closePopup() {
+        document.getElementById('popup').classList.add('hidden');
+        document.getElementById('deleteReason').value = ''; // 입력 초기화
+      }
+
+      function openCancelPopup(matchId, reservationId) {
+        if (confirm('정말 예약을 취소하시겠습니까?')) {
+          fetch(`/cancel_reservation/${reservationId}`, {
+            method: 'POST',
           })
-          .catch(error => {
-            console.error("예약 취소 중 오류 발생:", error);
-            alert("예약 취소 중 오류가 발생했습니다.");
-          });
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.message === '예약 취소 성공!') {
+                showCustomAlert('예약이 취소되었습니다.');
+                fetchReservations();
+
+              } else {
+                showCustomAlert('삭제 실패: ' + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error('삭제 요청 중 오류 발생:', error);
+              showCustomAlert('삭제 요청 중 오류가 발생했습니다.');
+            });
+          // 팝업 닫기
+          closePopup();
+        }
       }
-    }
 
-    // DOMContentLoaded 이벤트 후 실행 (기존 코드 유지)
-    document.addEventListener("DOMContentLoaded", function () {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "/login";
-        return;
+      function openConfirmPopup() {
+        document.getElementById('confirmPopup').classList.remove('hidden');
       }
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const username = payload.username;
-      document.getElementById("username-display").textContent = `${username}님!`;
-      document.getElementById("guest-buttons").classList.add("hidden");
-      document.getElementById("user-buttons").classList.remove("hidden");
 
-      // 예약 데이터를 AJAX로 불러오기
-      fetchReservations();
-    });
+      function closeConfirmPopup() {
+        document.getElementById('confirmPopup').classList.add('hidden');
+      }
 
-    function logout() {
-      localStorage.removeItem("token");
-      alert("로그아웃 되었습니다!");
-      window.location.href = "/";
-    }
-  </script>
+      function showCustomAlert(message) {
+        document.getElementById('customAlertMessage').textContent = message;
+        document.getElementById('customAlertPopup').classList.remove('hidden');
+      }
 
-</body>
-
+      function closeCustomAlert() {
+        document.getElementById('customAlertPopup').classList.add('hidden');
+      }
+    </script>
+  </body>
 </html>
+
