@@ -50,7 +50,21 @@
 
       <!-- 예약자 리스트 -->
       <div class="mt-4 space-y-2">
-        {% for reservation in reservations %}
+        {% for reservation in reservations %} {% if reservation.user_id ==
+        match.creator_id|string %}
+        <!-- 주최자: 강조 처리 (예: 배경색을 다르게) -->
+        <div
+          class="flex justify-between items-center bg-yellow-300 px-4 py-2 rounded-lg border-2 border-yellow-500"
+        >
+          <p class="text-sm font-bold">주최자: {{ reservation.username }}님</p>
+          <a
+            href="tel:{{ reservation.phone }}"
+            class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition flex items-center justify-center w-10 h-10"
+          >
+            📞
+          </a>
+        </div>
+        {% else %}
         <div
           class="flex justify-between items-center bg-gray-200 px-4 py-2 rounded-lg"
         >
@@ -62,7 +76,7 @@
             📞
           </a>
         </div>
-        {% else %}
+        {% endif %} {% else %}
         <p class="text-center text-gray-500">예약자가 없습니다.</p>
         {% endfor %}
       </div>

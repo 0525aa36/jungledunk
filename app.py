@@ -440,19 +440,36 @@ def player_list(match_id):
         match_obj_id = ObjectId(match_id)
     except Exception as e:
         return "잘못된 match_id입니다.", 400
+    
+    match = matches_collection.find_one({'_id': match_obj_id})
+    if not match:
+        return "해당 매치를 찾을 수 없습니다.", 404
 
     reservations_cursor = reservations_collection.find({'match_id': match_obj_id})
+    host_reservation = None
+    other_reservations = [] 
     reservations = []
     for res in reservations_cursor:
         user = users_collection.find_one({'_id': ObjectId(res['user_id'])})
         if user:
-            reservations.append({
+            reservation_info = {
+                'user_id': str(user['_id']),
                 'username': user.get('username', '알 수 없음'),
                 'phone': user.get('phone', '알 수 없음'),
                 'email': user.get('email', '')
-            })
-    # 해당 match 정보 조회
-    match = matches_collection.find_one({'_id': match_obj_id})
+            }
+            # 주최자와 예약자의 user_id가 같다면 host_reservation에 저장
+            if reservation_info['user_id'] == str(match['creator_id']):
+                host_reservation = reservation_info
+            else:
+                other_reservations.append(reservation_info)
+
+    # 주최자의 예약 정보가 있다면 앞에 추가합니다.
+    reservations = []
+    if host_reservation:
+        reservations.append(host_reservation)
+    reservations.extend(other_reservations)
+
     return render_template('player_list.html', reservations=reservations, match=match)
 
     # 모집자가 매치를 취소
