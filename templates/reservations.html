@@ -45,15 +45,13 @@
             ></span>
             <a
               href="/reservations"
-              class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm"
-              >내 예약현황</a
-            >
+              class="text-[#15857A] text-sm hover:text-[#0E6153]"
+            >내 예약현황</a>
+
             <button
               onclick="logout()"
-              class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm"
-            >
-              로그아웃
-            </button>
+              class="text-red-500 text-sm hover:text-red-600"
+            >로그아웃</button>
           </div>
         </div>
       </div>
@@ -87,18 +85,17 @@
           </div>
           <div class="w-1/4 flex flex-col items-end space-y-2">
             {% if match.creator_id == current_user_id %}openCancelPopup
+            
             <button
               onclick="openPopup('{{ match._id }}')"
-              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition"
-            >
-              삭제하기
-            </button>
+              class="bg-red-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-red-600 transition mx-auto block"
+            >삭제하기</button>
+
             <a
               href="/player_list/{{ match._id }}"
-              class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition"
-            >
-              예약자 명단
-            </a>
+              class="bg-[#15857A] text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-[#106156] transition"
+            >예약자 명단</a>
+
             {% else %}
             <button
               onclick="openCancelPopup('{{ match._id }}', '{{ res.reservation_id }}')"
@@ -267,27 +264,42 @@
           pageReservations.forEach((res) => {
             const match = res.match;
             html += `
-        <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
-          <!-- 왼쪽 상세 정보: 클릭하면 댓글 페이지로 이동 -->
-          <div class="flex-grow cursor-pointer" onclick="navigateToComment('${
-            match.match_id
-          }')">
-            <p class="text-sm text-gray-500">날짜: ${match.date}</p>
-            <p class="text-lg font-semibold text-gray-800">
-              ${match.time_start} ~ ${match.time_end}
-            </p>
-            <p class="text-sm text-gray-700">인원: ${match.current_players} / ${
-              match.max_players
-            }</p>
-            <p class="text-xs text-gray-500">예약자: ${match.creator_name}</p>
+          <div class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center">
+              <!-- 왼쪽 상세 정보 -->
+              <div class="flex-grow cursor-pointer" onclick="navigateToComment('${match.match_id}')">
+              <!-- 날짜 정보 -->
+              <p class="text-sm text-gray-500 text-left">📅 날짜: ${match.date}</p>
+              <!-- 시간 정보 -->
+              <div class="flex-none text-lg font-bold whitespace-nowrap text-gray-900 text-left">
+                ⏰ ${match.time_start} ~ ${match.time_end}
+              </div>
+              <!-- 인원 및 기타 정보 -->
+              <div class="w-2/4 text-base text-gray-700 mt-2 text-left">
+              <p class="font-semibold">👥 인원: ${match.current_players} / ${match.max_players}</p>
+              <p class="text-gray-600">🏀 #${match.court_type}, ✍️ #${match.memo}</p>
+              <p class="text-sm text-gray-500 font-medium">📌 예약자: ${match.creator_name}</p>
+              </div>
           </div>
           <!-- 오른쪽 버튼 영역 -->
           <div class="w-1/4 flex flex-col items-end space-y-2">
             ${
               match.creator_id === currentUserId
-                ? `<button onclick="openPopup('${match._id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">삭제하기</button>
-                 <a href="/player_list/${match._id}" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">예약자 명단</a>`
-                : `<button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">취소하기</button>`
+                ? `
+                  <button onclick="openPopup('${match._id}')" class="bg-red-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-red-600 transition mx-auto block">
+                    삭제하기
+                  </button>
+                  <a href="/player_list/${match._id}" class="bg-[#15857A] text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-[#106156] transition">
+                    예약자 명단
+                  </a>
+                  <button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
+                    취소하기
+                  </button>
+                `
+                : `
+                  <button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-red-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-red-600 transition mx-auto block">
+                    취소하기
+                  </button>
+                `
             }
           </div>
         </div>

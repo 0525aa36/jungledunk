@@ -25,38 +25,22 @@
         </a>
       </div>
 
-      <!-- 로그인 상태에 따른 버튼 -->
-      <div id="nav-center" class="flex items-center space-x-2 mb-8">
-        <!-- 게스트 상태 -->
-        <div id="guest-buttons" class="flex space-x-2">
-          <a
-            href="/login"
-            class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]"
-            >로그인</a
-          >
-          <a
-            href="/register"
-            class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
-            >회원가입</a
-          >
-        </div>
-        <!-- 로그인 된 상태 -->
-        <div id="user-buttons" class="hidden flex items-center space-x-2">
-          <span
-            id="username-display"
-            class="text-sm font-bold text-gray-800"
-          ></span>
-          <a
-            href="/reservations"
-            class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm"
-            >내 예약현황</a
-          >
-          <button
-            onclick="logout()"
-            class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm"
-          >
-            로그아웃
-          </button>
+    
+        <!-- 로그인 상태에 따른 버튼 -->
+        <div id="nav-center" class="flex items-center space-x-2 mb-8">
+            <!-- 게스트 상태 -->
+            <div id="guest-buttons" class="flex space-x-2">
+                <a href="/login" class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]">로그인</a>
+                <a href="/register" class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600">회원가입</a>
+            </div>
+            <!-- 로그인 된 상태 -->
+            <div id="user-buttons" class="hidden flex items-center space-x-2">
+                <span id="username-display" class="text-sm font-bold text-gray-800"></span>
+                <a href="/reservations"
+                    class="text-[#15857A] text-sm hover:text-[#0E6153]">내 예약현황</a>
+                <button onclick="logout()"
+                    class="text-red-500 text-sm hover:text-red-600">로그아웃</button>
+            </div>
         </div>
       </div>
     </div>
