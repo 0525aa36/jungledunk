@@ -588,6 +588,45 @@ def cancel_reservation(reservation_id):
 
     return jsonify({'message': '예약 취소 성공!'}), 200
 
+# 당일 시간이 지난 예약은 삭제
+@app.route('/delete_expired_matches', methods=['POST'])
+def delete_expired_matches():
+    data = request.get_json()
+    date = data.get('date')
+    if not date:
+        return jsonify({'message': '날짜를 입력하세요.'}), 400
+
+    now = datetime.now()  # 서버의 현지 시간 사용 (타임존 일치에 주의)
+    matches = list(matches_collection.find({'date': date}))
+    deleted_count = 0
+    for match in matches:
+        match_end_str = match.get('time_end')  # "HH:MM" 형식
+        try:
+            match_end_dt = datetime.strptime(date + ' ' + match_end_str, "%Y-%m-%d %H:%M")
+        except Exception as e:
+            continue  # 형식 오류 발생 시 건너뜀
+        if match_end_dt < now:
+            matches_collection.delete_one({'_id': match['_id']})
+            deleted_count += 1
+
+    return jsonify({'message': 'Expired matches deleted', 'deleted': deleted_count}), 200
+
+# 내가 예약한 내역 확인
+@app.route('/is_joined', methods=['GET'])
+def is_joined():
+    match_id = request.args.get('match_id')
+    user_id = request.args.get('user_id')
+    if not match_id or not user_id:
+        return jsonify({'message': 'match_id와 user_id가 필요합니다.'}), 400
+    try:
+        reservation = reservations_collection.find_one({
+            'match_id': ObjectId(match_id),
+            'user_id': ObjectId(user_id)
+        })
+        joined = reservation is not None
+        return jsonify({'joined': joined}), 200
+    except Exception as e:
+        return jsonify({'message': '예약 확인 중 오류 발생', 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

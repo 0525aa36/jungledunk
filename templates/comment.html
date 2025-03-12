@@ -1,321 +1,394 @@
 <!DOCTYPE html>
 <html lang="ko">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>매치 상세 페이지</title>
     <!-- 🔹(변경됨) 반응형 및 확대 방지 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
+  </head>
 
-<body class="bg-gray-100 min-h-screen flex flex-col items-center">
-
+  <body class="bg-gray-100 min-h-screen flex flex-col items-center">
     <!-- 상단 영역: 로고 + 네비게이션 -->
     <div class="flex flex-col items-center pt-8">
-        <!-- 로고 -->
-        <div class="mb-4">
-            <a href="/">
-                <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-                    class="h-20 w-auto mx-auto" />
-            </a>
-        </div>
+      <!-- 로고 -->
+      <div class="mb-4">
+        <a href="/">
+          <img
+            src="{{ url_for('static', filename='jungledunk.png') }}"
+            alt="Jungle Dunk Logo"
+            class="h-20 w-auto mx-auto"
+          />
+        </a>
+      </div>
 
-        <!-- 로그인 상태에 따른 버튼 -->
-        <div id="nav-center" class="flex items-center space-x-2 mb-8">
-            <!-- 게스트 상태 -->
-            <div id="guest-buttons" class="flex space-x-2">
-                <a href="/login" class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]">로그인</a>
-                <a href="/register" class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600">회원가입</a>
-            </div>
-            <!-- 로그인 된 상태 -->
-            <div id="user-buttons" class="hidden flex items-center space-x-2">
-                <span id="username-display" class="text-sm font-bold text-gray-800"></span>
-                <a href="/reservations"
-                    class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm">내 예약현황</a>
-                <button onclick="logout()"
-                    class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm">로그아웃</button>
-            </div>
+      <!-- 로그인 상태에 따른 버튼 -->
+      <div id="nav-center" class="flex items-center space-x-2 mb-8">
+        <!-- 게스트 상태 -->
+        <div id="guest-buttons" class="flex space-x-2">
+          <a
+            href="/login"
+            class="px-3 py-1 bg-[#15857A] text-white rounded shadow hover:bg-[#15857A]"
+            >로그인</a
+          >
+          <a
+            href="/register"
+            class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >회원가입</a
+          >
         </div>
+        <!-- 로그인 된 상태 -->
+        <div id="user-buttons" class="hidden flex items-center space-x-2">
+          <span
+            id="username-display"
+            class="text-sm font-bold text-gray-800"
+          ></span>
+          <a
+            href="/reservations"
+            class="px-3 py-1 bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 text-sm"
+            >내 예약현황</a
+          >
+          <button
+            onclick="logout()"
+            class="px-3 py-1 bg-red-500 text-white rounded shadow hover:bg-red-600 text-sm"
+          >
+            로그아웃
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 매치 상세 정보 영역 -->
     <main class="flex-1 flex flex-col items-center mt-8 px-4 w-full">
-        <!-- 🔹 반응형 적용: 데스크탑에서 중앙 정렬 -->
-        <section class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mx-auto">
-            <div class="mb-4 text-center md:text-left">
-                <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
-                    ⏰ <span id="matchTime">00:00 ~ 00:00</span>
-                </div>
-                <div class="w-2/4 text-base text-gray-700 ml-4 text-left">
-                    <p class="font-semibold">👥 인원: <span id="matchParticipants">0 / 0</span></p>
-                    <p class="text-gray-600">🏀 <span id="matchMemo">#매치 정보</span></p>
-                    <p class="text-sm text-gray-500 font-medium">📌 예약자: <span id="matchCreator">관리자</span></p>
-                </div>
-            </div>
-            <!-- 🔹 신청하기 버튼을 가운데 정렬 & 크기 자동 조정 -->
-            <div class="flex justify-center">
-                <button id="applyButton" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
-                        w-full sm:w-auto min-w-[80px] max-w-[110px]">
-                    신청하기
-                </button>
-            </div>
-        </section>
+      <!-- 🔹 반응형 적용: 데스크탑에서 중앙 정렬 -->
+      <section
+        class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mx-auto"
+      >
+        <div class="mb-4 text-center md:text-left">
+          <!-- 매치 날짜 추가 -->
+          <div
+            class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left"
+          >
+            📅 <span id="matchDate">YYYY-MM-DD</span>
+          </div>
+          <div
+            class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left"
+          >
+            ⏰ <span id="matchTime">00:00 ~ 00:00</span>
+          </div>
+          <div
+            class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left"
+          >
+            <p class="font-semibold">
+              👥 인원: <span id="matchParticipants">0 / 0</span>
+            </p>
+            <p class="text-gray-600">
+              🏀 <span id="matchMemo">#매치 정보</span>
+            </p>
+            <p class="text-gray-600">
+              📌 예약자: <span id="matchCreator">관리자</span>
+            </p>
+          </div>
+        </div>
+        <!-- 🔹 신청하기 버튼을 가운데 정렬 & 크기 자동 조정 -->
+        <div class="flex justify-center">
+          <button
+            id="applyButton"
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-auto"
+          >
+            신청하기
+          </button>
+        </div>
+      </section>
 
-        <!-- 🔹 반응형 적용: 댓글 섹션도 크기 자동 조정 & 데스크탑에서 중앙 정렬 -->
-        <section class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mt-6 mx-auto">
-            <h3 class="text-lg md:text-xl font-bold mb-4 text-center md:text-left">댓글</h3>
+      <!-- 🔹 반응형 적용: 댓글 섹션도 크기 자동 조정 & 데스크탑에서 중앙 정렬 -->
+      <section
+        class="bg-white w-full max-w-2xl p-6 rounded-lg shadow-md mt-6 mx-auto"
+      >
+        <h3 class="text-lg md:text-xl font-bold mb-4 text-center md:text-left">
+          댓글
+        </h3>
 
-            <!-- 기존 댓글 리스트 -->
-            <div id="commentList" class="space-y-2 mb-4">
-                <p class="text-center text-gray-500">등록된 댓글이 없습니다.</p>
-            </div>
+        <!-- 기존 댓글 리스트 -->
+        <div id="commentList" class="space-y-2 mb-4">
+          <p class="text-center text-gray-500">등록된 댓글이 없습니다.</p>
+        </div>
 
-            <!-- 🔹 입력 버튼 크기를 절반으로 축소 & 오른쪽 정렬 유지 -->
-            <div class="flex space-x-2">
-                <input type="text" id="commentInput" class="flex-1 border rounded px-3 py-2 text-sm md:text-base"
-                    placeholder="댓글을 입력하세요." />
-                <button onclick="addComment()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 
-                        w-full sm:w-auto min-w-[60px] max-w-[100px]">
-                    입력
-                </button>
-            </div>
-        </section>
+        <!-- 🔹 입력 버튼 크기를 절반으로 축소 & 오른쪽 정렬 유지 -->
+        <div class="flex space-x-2">
+          <input
+            type="text"
+            id="commentInput"
+            class="flex-1 border rounded px-3 py-2 text-sm md:text-base"
+            placeholder="댓글을 입력하세요."
+          />
+          <button
+            onclick="addComment()"
+            class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 w-full sm:w-auto min-w-[60px] max-w-[100px]"
+          >
+            입력
+          </button>
+        </div>
+      </section>
     </main>
 
-
-
     <!-- 인원 꽉 참 팝업 -->
-    <div id="fullPopup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <p class="text-lg font-semibold">신청 불가</p>
-            <p class="text-sm text-gray-600 mt-2">해당 경기는 이미 인원이 다 찼습니다.</p>
-            <div class="mt-4 flex justify-center">
-                <button onclick="closeFullPopup()"
-                    class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">확인</button>
-            </div>
+    <div
+      id="fullPopup"
+      class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+        <p class="text-lg font-semibold">신청 불가</p>
+        <p class="text-sm text-gray-600 mt-2">
+          해당 경기는 이미 인원이 다 찼습니다.
+        </p>
+        <div class="mt-4 flex justify-center">
+          <button
+            onclick="closeFullPopup()"
+            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+          >
+            확인
+          </button>
         </div>
+      </div>
     </div>
 
-
     <!-- 신청 완료 팝업 -->
-    <div id="successPopup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <p class="text-lg font-semibold">신청 완료</p>
-            <p class="text-sm text-gray-600 mt-2">매치 예약이 완료되었습니다.</p>
-            <div class="mt-4 flex justify-center">
-                <button onclick="closeSuccessPopup()"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">확인</button>
-            </div>
+    <div
+      id="successPopup"
+      class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+        <p class="text-lg font-semibold">신청 완료</p>
+        <p class="text-sm text-gray-600 mt-2">매치 예약이 완료되었습니다.</p>
+        <div class="mt-4 flex justify-center">
+          <button
+            onclick="closeSuccessPopup()"
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+          >
+            확인
+          </button>
         </div>
+      </div>
     </div>
 
     <script>
-        // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
-        document.addEventListener("DOMContentLoaded", function () {
-            const token = localStorage.getItem("token");
-            if (token) {
-                const payload = JSON.parse(atob(token.split(".")[1]));
-                const username = payload.username;
-                document.getElementById("username-display").textContent = `${username}님!`;
-                document.getElementById("guest-buttons").classList.add("hidden");
-                document.getElementById("user-buttons").classList.remove("hidden");
-            }
-        });
-        // URL에서 match_id 가져오기
-        function getMatchIdFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            const matchId = params.get('match_id');
-            console.log("🛠 URL에서 가져온 match_id:", matchId); // 디버깅 로그 추가
-            return matchId;
+      // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
+      document.addEventListener('DOMContentLoaded', function () {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const username = payload.username;
+          document.getElementById(
+            'username-display'
+          ).textContent = `${username}님!`;
+          document.getElementById('guest-buttons').classList.add('hidden');
+          document.getElementById('user-buttons').classList.remove('hidden');
+        }
+      });
+      // URL에서 match_id 가져오기
+      function getMatchIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const matchId = params.get('match_id');
+        console.log('🛠 URL에서 가져온 match_id:', matchId); // 디버깅 로그 추가
+        return matchId;
+      }
+
+      // 예약 신청 함수 (신청 버튼 클릭 시 실행)
+      // 예약 신청 함수
+      function applyMatch(matchId, currentParticipants, maxParticipants) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
         }
 
-        // 예약 신청 함수 (신청 버튼 클릭 시 실행)
-        // 예약 신청 함수
-        function applyMatch(matchId, currentParticipants, maxParticipants) {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                window.location.href = '/login';
-                return;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const user_id = payload.user_id; // _id 값을 사용
+
+        fetch('/create_reservation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ match_id: String(matchId), user_id: user_id }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.message === '예약 신청이 완료되었습니다!') {
+              openSuccessPopup();
+              loadMatchDetails(); // 예약 인원 업데이트
+            } else if (
+              data.message ===
+              '예약 신청이 불가능합니다. 이미 인원이 다 찼습니다.'
+            ) {
+              openFullPopup();
+            } else {
+              alert(data.message);
             }
+          })
+          .catch((error) => {
+            console.error('예약 신청 중 오류 발생:', error);
+          });
+      }
 
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const user_id = payload.user_id;  // _id 값을 사용
-
-            fetch('/create_reservation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ match_id: String(matchId), user_id: user_id })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message === '예약 신청이 완료되었습니다!') {
-                        openSuccessPopup();
-                        loadMatchDetails();  // 예약 인원 업데이트
-                    } else if (data.message === '예약 신청이 불가능합니다. 이미 인원이 다 찼습니다.') {
-                        openFullPopup();
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error("예약 신청 중 오류 발생:", error);
-                });
+      // 댓글 불러오기 함수
+      function loadComments() {
+        const matchId = getMatchIdFromUrl();
+        if (!matchId) {
+          console.error('❌ match_id가 없습니다.');
+          return;
         }
 
+        console.log(`🛠 댓글 불러오기: match_id=${matchId}`);
 
-        // 댓글 불러오기 함수
-        function loadComments() {
-            const matchId = getMatchIdFromUrl();
-            if (!matchId) {
-                console.error("❌ match_id가 없습니다.");
-                return;
+        fetch(`/get_comments?match_id=${matchId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            const commentList = document.getElementById('commentList');
+            if (!commentList) {
+              console.error('❌ commentList 요소를 찾을 수 없습니다.');
+              return;
             }
 
-            console.log(`🛠 댓글 불러오기: match_id=${matchId}`);
-
-            fetch(`/get_comments?match_id=${matchId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const commentList = document.getElementById("commentList");
-                    if (!commentList) {
-                        console.error("❌ commentList 요소를 찾을 수 없습니다.");
-                        return;
-                    }
-
-                    if (data.comments.length === 0) {
-                        commentList.innerHTML = '<p class="text-gray-500">등록된 댓글이 없습니다.</p>';
-                    } else {
-                        let html = '';
-                        data.comments.forEach(comment => {
-                            html += `<div class="bg-gray-50 p-2 rounded mb-2">
+            if (data.comments.length === 0) {
+              commentList.innerHTML =
+                '<p class="text-gray-500">등록된 댓글이 없습니다.</p>';
+            } else {
+              let html = '';
+              data.comments.forEach((comment) => {
+                html += `<div class="bg-gray-50 p-2 rounded mb-2">
                                 <span class="font-semibold">${comment.user_id}:</span> ${comment.content}
                              </div>`;
-                        });
-                        commentList.innerHTML = html;
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ 댓글 불러오기 오류:", error);
-                });
-        }
-
-
-        // 댓글 작성 함수
-        function addComment() {
-            const matchId = getMatchIdFromUrl();
-            const commentInput = document.getElementById("commentInput");
-            const content = commentInput.value.trim();
-            if (!content) {
-                alert("댓글을 입력하세요.");
-                return;
+              });
+              commentList.innerHTML = html;
             }
+          })
+          .catch((error) => {
+            console.error('❌ 댓글 불러오기 오류:', error);
+          });
+      }
 
-            const token = localStorage.getItem("token");
-            if (!token) {
-                window.location.href = '/login';
-                return;
+      // 댓글 작성 함수
+      function addComment() {
+        const matchId = getMatchIdFromUrl();
+        const commentInput = document.getElementById('commentInput');
+        const content = commentInput.value.trim();
+        if (!content) {
+          alert('댓글을 입력하세요.');
+          return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const user_id = payload.username; // JWT에서 username 추출
+
+        fetch('/add_comment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            match_id: matchId,
+            user_id: user_id,
+            content: content,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.message === '댓글 등록 성공!') {
+              commentInput.value = '';
+              loadComments(); // 🚀 댓글 추가 후 목록 다시 불러오기
+            } else {
+              alert(data.message);
             }
+          })
+          .catch((error) => {
+            console.error('❌ 댓글 등록 오류:', error);
+          });
+      }
 
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const user_id = payload.username;  // JWT에서 username 추출
-
-            fetch('/add_comment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ match_id: matchId, user_id: user_id, content: content })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message === '댓글 등록 성공!') {
-                        commentInput.value = '';
-                        loadComments();  // 🚀 댓글 추가 후 목록 다시 불러오기
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ 댓글 등록 오류:", error);
-                });
+      // 특정 매치 정보를 불러와 화면에 표시
+      function loadMatchDetails() {
+        const matchId = getMatchIdFromUrl();
+        if (!matchId) {
+          alert('잘못된 접근입니다. match_id가 없습니다.');
+          return;
         }
-
-
-
-        // 특정 매치 정보를 불러와 화면에 표시
-        function loadMatchDetails() {
-            const matchId = getMatchIdFromUrl();
-            if (!matchId) {
-                alert("잘못된 접근입니다. match_id가 없습니다.");
-                return;
+        fetch(`/get_match?match_id=${matchId}`)
+          .then((response) => response.json())
+          .then((match) => {
+            if (match.message) {
+              alert(match.message);
+              return;
             }
+            // HTML 요소 업데이트
+            document.getElementById('matchDate').innerText = match.date; // 추가된 부분
+            document.getElementById(
+              'matchTime'
+            ).innerText = `${match.time_start} ~ ${match.time_end}`;
+            document.getElementById(
+              'matchParticipants'
+            ).innerHTML = `<span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
+            document.getElementById(
+              'matchMemo'
+            ).innerText = `#${match.court_type} #${match.memo}`;
+            document.getElementById('matchCreator').innerText =
+              match.creator_name;
+            // JWT 토큰에서 현재 사용자 정보 추출
+            const token = localStorage.getItem('token');
+            let currentUserId = null;
+            if (token) {
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              currentUserId = payload.user_id;
+            }
+            const applyButton = document.getElementById('applyButton');
+            if (currentUserId && match.creator_id === currentUserId) {
+              // 매치 생성자라면 신청하기 버튼 숨김
+              applyButton.style.display = 'none';
+            } else {
+              // 다른 사용자는 신청 가능하도록 버튼 활성화
+              applyButton.style.display = 'block';
+              applyButton.setAttribute(
+                'onclick',
+                `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`
+              );
+            }
+          })
+          .catch((error) => {
+            console.error(':x: 매치 데이터를 불러오는 중 오류 발생:', error);
+          });
+      }
 
-            fetch(`/get_match?match_id=${matchId}`)
-                .then(response => response.json())
-                .then(match => {
-                    if (match.message) {
-                        alert(match.message);
-                        return;
-                    }
+      function openFullPopup() {
+        document.getElementById('fullPopup').classList.remove('hidden');
+      }
 
-                    // HTML 요소 업데이트
-                    document.getElementById("matchTime").innerText = `${match.time_start} ~ ${match.time_end}`;
-                    document.getElementById("matchParticipants").innerHTML = ` <span class="font-semibold">${match.current_players}/${match.max_players}</span>`;
-                    document.getElementById("matchMemo").innerText = `#${match.court_type} #${match.memo}`;
-                    // 추가: 예약자(매치를 만든 사람)의 이름 업데이트
-                    document.getElementById("matchCreator").innerText = match.creator_name;
+      function closeFullPopup() {
+        document.getElementById('fullPopup').classList.add('hidden');
+      }
 
-                    // JWT 토큰에서 현재 사용자 정보 추출
-                    const token = localStorage.getItem("token");
-                    let currentUserId = null;
-                    if (token) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        currentUserId = payload.user_id;
-                    }
+      function openSuccessPopup() {
+        document.getElementById('successPopup').classList.remove('hidden');
+      }
 
-                    const applyButton = document.getElementById("applyButton");
-                    if (currentUserId && match.creator_id === currentUserId) {
-                        // 매치 생성자라면 신청하기 버튼 숨김
-                        applyButton.style.display = "none";
-                    } else {
-                        // 다른 사용자는 신청 가능하도록 버튼 활성화
-                        applyButton.style.display = "block";
-                        applyButton.setAttribute("onclick", `applyMatch('${match.match_id}', ${match.current_players}, ${match.max_players})`);
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ 매치 데이터를 불러오는 중 오류 발생:", error);
-                });
-        }
+      function closeSuccessPopup() {
+        document.getElementById('successPopup').classList.add('hidden');
+      }
 
-
-
-
-        function openFullPopup() {
-            document.getElementById('fullPopup').classList.remove('hidden');
-        }
-
-        function closeFullPopup() {
-            document.getElementById('fullPopup').classList.add('hidden');
-        }
-
-        function openSuccessPopup() {
-            document.getElementById('successPopup').classList.remove('hidden');
-        }
-
-        function closeSuccessPopup() {
-            document.getElementById('successPopup').classList.add('hidden');
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            loadMatchDetails();  // 매치 정보 불러오기
-            loadComments();  // 🚀 페이지 로드 시 댓글 불러오기 추가
-        });
-        function logout() {
+      document.addEventListener('DOMContentLoaded', function () {
+        loadMatchDetails(); // 매치 정보 불러오기
+        loadComments(); // 🚀 페이지 로드 시 댓글 불러오기 추가
+      });
+      function logout() {
         localStorage.removeItem('token'); // JWT 토큰 삭제
         alert('로그아웃 되었습니다!');
         window.location.href = '/'; // index.html로 이동
       }
     </script>
-</body>
-
+  </body>
 </html>

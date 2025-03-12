@@ -179,14 +179,13 @@
         }
       }
 
-      function selectDate(dateStr) {
+      // 매치 목록을 불러오는 함수 (삭제 후 또는 일반 호출 시 사용)
+      function fetchMatches(dateStr) {
         const dataContainer = document.getElementById('data-container');
-
         fetch(`/get_matches?date=${dateStr}`)
           .then((response) => response.json())
           .then((data) => {
             let matches = data.matches || [];
-
             // 현재 시간 기준으로 아직 진행 중(또는 시작 전)인 매치만 필터링
             const now = new Date();
             matches = matches.filter((match) => {
@@ -195,56 +194,50 @@
               );
               return matchEndDateTime >= now;
             });
-
-            // 선택한 날짜를 표시하는 헤더 추가 (음수 마진 제거)
             let html = `<div class="text-center mt-[-100px] mb-2 font-bold text-xl">${dateStr}</div>`;
-
             if (matches.length === 0) {
               html += `<div class="p-4 bg-white border border-gray-300 text-gray-700 text-center rounded-lg shadow-md min-h-[100px]">
-                                아직 예약이 없어요.<br>예약하시려면 아래 <span class="font-bold text-orange-500">+ 버튼</span>을 눌러주세요.
-                             </div>`;
+                    아직 예약이 없어요.<br>예약하시려면 아래 <span class="font-bold text-orange-500">+ 버튼</span>을 눌러주세요.
+                 </div>`;
             } else {
               matches.forEach((match) => {
                 const isFull = match.current_players === match.max_players;
                 html += `
-                <div class="space-y-4">
-                    <button onclick="navigateIfLoggedIn('/comment?match_id=${
-                      match.match_id
-                    }')"
-        class="w-full text-left relative bg-white border border-gray-300 shadow-lg rounded-xl p-5 flex flex-col md:flex-row md:items-center items-center
-        ${
-          isFull
-            ? 'opacity-50 cursor-not-allowed'
-            : 'hover:shadow-xl transition duration-300 ease-in-out'
-        }"
-        ${isFull ? 'disabled' : ''}>
-
-                    ${
-                      isFull
-                        ? `<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 text-white text-lg font-bold rounded-xl">
-                              🚫 이미 마감됨
-                           </div>`
-                        : ''
-                    }
-
-                    <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
-                        ⏰ ${match.time_start} ~ ${match.time_end}
-                    </div>
-
-                    <div class="w-2/4 text-base text-gray-700 ml-4 text-left">
-                        <p class="font-semibold">👥 인원: ${
-                          match.current_players
-                        } / ${match.max_players}</p>
-                        <p class="text-gray-600">🏀 #${
-                          match.court_type
-                        } , ✍️ #${match.memo}</p>
-                        <p class="text-sm text-gray-500 font-medium">📌 예약자: ${
-                          match.creator_name
-                        }</p>
-                    </div>
-                  </button>
-                </div>
-            `;
+          <div class="space-y-4">
+              <button onclick="navigateIfLoggedIn('/comment?match_id=${
+                match.match_id
+              }')"
+                  class="w-full text-left relative bg-white border border-gray-300 shadow-lg rounded-xl p-5 flex flex-col md:flex-row md:items-center items-center
+                  ${
+                    isFull
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:shadow-xl transition duration-300 ease-in-out'
+                  }"
+                  ${isFull ? 'disabled' : ''}>
+                  ${
+                    isFull
+                      ? `<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 text-white text-lg font-bold rounded-xl">
+                        🚫 이미 마감됨
+                      </div>`
+                      : ''
+                  }
+                  <div class="flex-none text-lg font-bold whitespace-nowrap md:pr-12 text-gray-900 text-left">
+                      ⏰ ${match.time_start} ~ ${match.time_end}
+                  </div>
+                  <div class="w-2/4 text-base text-gray-700 ml-4 text-left">
+                      <p class="font-semibold">👥 인원: ${
+                        match.current_players
+                      } / ${match.max_players}</p>
+                      <p class="text-gray-600">🏀 #${match.court_type} , ✍️ #${
+                  match.memo
+                }</p>
+                      <p class="text-sm text-gray-500 font-medium">📌 예약자: ${
+                        match.creator_name
+                      }</p>
+                  </div>
+              </button>
+          </div>
+          `;
               });
             }
             dataContainer.innerHTML = html;
@@ -254,6 +247,35 @@
             dataContainer.innerHTML =
               '데이터를 불러오는 중 오류가 발생했습니다.';
           });
+      }
+
+      // 날짜 선택 시 호출되는 함수
+      function selectDate(dateStr) {
+        // 로컬 기준 오늘 날짜 문자열 생성 (YYYY-MM-DD)
+        const today = new Date();
+        const localTodayStr = `${today.getFullYear()}-${String(
+          today.getMonth() + 1
+        ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        // 만약 선택한 날짜가 오늘이면, 먼저 만료된 매치를 삭제
+        if (dateStr === localTodayStr) {
+          fetch('/delete_expired_matches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: dateStr }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data.message, '삭제된 매치 수:', data.deleted);
+              fetchMatches(dateStr); // 삭제 후 매치 목록 업데이트
+            })
+            .catch((error) => {
+              console.error('만료된 매치 삭제 실패:', error);
+              fetchMatches(dateStr);
+            });
+        } else {
+          fetchMatches(dateStr);
+        }
       }
 
       document.addEventListener('DOMContentLoaded', function () {
