@@ -1,136 +1,119 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>로그인</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      @keyframes blink {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0;
-        }
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로그인</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
       }
-      .blink {
-        animation: blink 5s linear infinite;
+
+      50% {
+        opacity: 0;
       }
-    </style>
-  </head>
-  <body class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-96">
-      <div class="mb-4">
-        <a href="/">
-          <img
-            src="{{ url_for('static', filename='jungledunk.png') }}"
-            alt="Jungle Dunk Logo"
-            class="h-20 w-auto mx-auto"
-          />
-        </a>
-      </div>
+    }
 
-      <h2 class="text-2xl font-bold mb-6 text-center">로그인</h2>
-      <form id="loginForm" class="space-y-4">
-        <div>
-          <label class="block font-semibold">이메일</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            class="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
-        <div>
-          <label class="block font-semibold">비밀번호</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            class="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
-        <button
-          type="submit"
-          class="w-full bg-black text-white py-2 rounded-lg hover:bg-black">
-          로그인
-        </button>
-      </form>
-      <p id="message" class="text-center text-red-500 mt-4"></p>
+    .blink {
+      animation: blink 5s linear infinite;
+    }
+  </style>
+</head>
 
-      <!-- 깜빡이는 가입 유도 멘트 -->
-      <p class="mt-4 text-center text-sm blink text-blue-500">
-        아직 계정이 없으신가요?
-      </p>
-
-      <!-- 회원가입 버튼 -->
-      <a
-        href="/register"
-        class="block mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 text-center"
-      >
-        회원가입
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-96">
+    <div class="mb-4">
+      <a href="/">
+        <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
+          class="h-20 w-auto mx-auto" />
       </a>
+    </div>
 
-      <!-- 커스텀 알림 -->
-      <div
-        id="customAlertPopup"
-        class="hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-center items-center"
-      >
-        <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-          <p id="customAlertMessage" class="text-lg"></p>
-          <div class="mt-4 flex justify-center">
-            <button
-              onclick="closeCustomAlert()"
-              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              확인
-            </button>
-          </div>
+    <h2 class="text-2xl font-bold mb-6 text-center">로그인</h2>
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block font-semibold">이메일</label>
+        <input type="email" id="email" name="email" required class="w-full px-4 py-2 border rounded-lg" />
+      </div>
+      <div>
+        <label class="block font-semibold">비밀번호</label>
+        <input type="password" id="password" name="password" required class="w-full px-4 py-2 border rounded-lg" />
+      </div>
+      <button type="submit" class="w-full bg-black text-white py-2 rounded-lg hover:bg-black">
+        로그인
+      </button>
+    </form>
+    <p id="message" class="text-center text-red-500 mt-4"></p>
+
+    <!-- 깜빡이는 가입 유도 멘트 -->
+    <p class="mt-4 text-center text-sm blink text-blue-500">
+      아직 계정이 없으신가요?
+    </p>
+
+    <!-- 회원가입 버튼 -->
+    <a href="/register"
+      class="block mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 text-center">
+      회원가입
+    </a>
+
+    <!-- 커스텀 알림 -->
+    <div id="customAlertPopup"
+      class="hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+      <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+        <p id="customAlertMessage" class="text-lg"></p>
+        <div class="mt-4 flex justify-center">
+          <button onclick="closeCustomAlert()"
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+            확인
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <script>
-      // 커스텀 알림 팝업 함수들을 최상단에 정의합니다.
-      function showCustomAlert(message) {
-        document.getElementById('customAlertMessage').textContent = message;
-        document.getElementById('customAlertPopup').classList.remove('hidden');
-      }
+  <script>
+    // 커스텀 알림 팝업 함수들을 최상단에 정의합니다.
+    function showCustomAlert(message) {
+      document.getElementById('customAlertMessage').textContent = message;
+      document.getElementById('customAlertPopup').classList.remove('hidden');
+    }
 
-      function closeCustomAlert() {
-        document.getElementById('customAlertPopup').classList.add('hidden');
-        window.location.href = '/';
-      }
-      document
-        .getElementById('loginForm')
-        .addEventListener('submit', function (event) {
-          event.preventDefault();
+    function closeCustomAlert() {
+      document.getElementById('customAlertPopup').classList.add('hidden');
+      window.location.href = '/';
+    }
+    document
+      .getElementById('loginForm')
+      .addEventListener('submit', function (event) {
+        event.preventDefault();
 
-          const email = document.getElementById('email').value;
-          const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-          fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
+        fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.token) {
+              showCustomAlert(data.message);
+              localStorage.setItem('token', data.token);
+            } else {
+              document.getElementById('message').textContent = data.message;
+            }
           })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.token) {
-                showCustomAlert(data.message);
-                localStorage.setItem('token', data.token);
-              } else {
-                document.getElementById('message').textContent = data.message;
-              }
-            })
-            .catch((error) => {
-              document.getElementById('message').textContent = '로그인 실패';
-            });
-        });
-    </script>
-  </body>
+          .catch((error) => {
+            document.getElementById('message').textContent = '로그인 실패';
+          });
+      });
+  </script>
+</body>
+
 </html>
