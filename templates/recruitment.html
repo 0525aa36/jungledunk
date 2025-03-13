@@ -79,6 +79,7 @@
         </label>
         <div class="flex space-x-2">
           <select id="timeStart" class="border rounded px-2 py-1 w-1/2">
+            <option value="시작 시간">시작 시간</option>
             <option value="06:00">06:00</option>
             <option value="06:30">06:30</option>
             <option value="07:00">07:00</option>
@@ -117,7 +118,9 @@
           </select>
 
           <span class="self-center">~</span>
-          <select id="timeEnd" class="border rounded px-2 py-1 w-1/2"></select>
+          <select id="timeEnd" class="border rounded px-2 py-1 w-1/2">
+            <option value="종료 시간">종료 시간</option>
+          </select>
         </div>
       </div>
 
@@ -183,17 +186,12 @@
 
     function closeCustomAlert() {
       document.getElementById('customAlertPopup').classList.add('hidden');
-      if (
-        document.getElementById('customAlertMessage').textContent ===
-        '로그아웃 되었습니다.'
-      ) {
+      const message = document.getElementById('customAlertMessage').textContent;
+      if (message === '로그아웃 되었습니다.' || message === '모집 등록 성공!') {
         window.location.href = '/';
       }
-      else {
-        location.reload();
-      }
-
-
+      // else 구문 없이 그냥 알럿 닫기만 함. 필요하다면 다른 조건을 추가할 수 있습니다.
+      location.reload();
     }
 
 
@@ -256,6 +254,13 @@
         const selectedDate = calendarInstance.selectedDates[0];
         const dateStr = calendarInstance.formatDate(selectedDate, 'Y-m-d');
 
+
+        // 시작 시간이나 종료 시간이 기본값일 경우 커스텀 알럿 표시
+        if (timeStart === '시작 시간' || timeEnd === '종료 시간') {
+          showCustomAlert('이용 시간을 선택하세요!');
+          return;
+        }
+
         const token = localStorage.getItem('token');
         if (!token) {
           showCustomAlert('로그인이 필요합니다!');
@@ -284,7 +289,6 @@
             if (data.match_id) {
               showCustomAlert('모집 등록 성공!');
               // 예약 생성 후 예약 현황 페이지로 리다이렉트
-              window.location.href = '/';
             } else {
               showCustomAlert('등록 실패: ' + data.message);
             }
