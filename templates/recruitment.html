@@ -28,23 +28,34 @@
     </style>
   </head>
 
-<body class="bg-gray-100 min-h-screen flex flex-col">
-  <div class="flex flex-col items-center pt-8">
-    <!-- 로고 -->
-    <div class="mb-4">
-      <a href="/">
-        <img src="{{ url_for('static', filename='jungledunk.png') }}" alt="Jungle Dunk Logo"
-             class="h-20 w-auto mx-auto" />
-      </a>
-    </div>
-    
-    <!-- 로그인 상태에 따른 버튼 -->
-    <div id="nav-center" class="flex items-center space-x-2 mb-8">
-      <!-- 게스트 상태 -->
-      <div id="guest-buttons" class="flex space-x-2">
-        <a href="/login" class="px-3 py-1 bg-black text-white rounded shadow hover:bg-[#15857A]">로그인</a>
-        <a href="/register" class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600">회원가입</a>
+  <body class="bg-gray-100 min-h-screen flex flex-col">
+    <div class="flex flex-col items-center pt-8">
+      <!-- 로고 -->
+      <div class="mb-4">
+        <a href="/">
+          <img
+            src="{{ url_for('static', filename='jungledunk.png') }}"
+            alt="Jungle Dunk Logo"
+            class="h-20 w-auto mx-auto"
+          />
+        </a>
       </div>
+
+      <!-- 로그인 상태에 따른 버튼 -->
+      <div id="nav-center" class="flex items-center space-x-2 mb-8">
+        <!-- 게스트 상태 -->
+        <div id="guest-buttons" class="flex space-x-2">
+          <a
+            href="/login"
+            class="px-3 py-1 bg-black text-white rounded shadow hover:bg-[#15857A]"
+            >로그인</a
+          >
+          <a
+            href="/register"
+            class="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >회원가입</a
+          >
+        </div>
 
         <!-- 로그인 된 상태 -->
         <div id="user-buttons" class="hidden flex items-center space-x-2">
@@ -181,7 +192,10 @@
 
         <!-- 모집하기 버튼 -->
         <div class="text-center">
-          <button id="recruitButton" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          <button
+            id="recruitButton"
+            class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
             모집글 생성
           </button>
         </div>
@@ -189,193 +203,214 @@
     </main>
 
     <script>
-      // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
-      document.addEventListener('DOMContentLoaded', function () {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const username = payload.username;
-          document.getElementById(
-            'username-display'
-          ).textContent = `${username}님!`;
-          document.getElementById('guest-buttons').classList.add('hidden');
-          document.getElementById('user-buttons').classList.remove('hidden');
-        }
-      });
 
-      function logout() {
-        localStorage.removeItem('token');
-        alert('로그아웃 되었습니다!');
+          function showCustomAlert(message) {
+           document.getElementById(‘customAlertMessage’).textContent = message;
+           document.getElementById(‘customAlertPopup’).classList.remove(‘hidden’);
+          }
+          
+          function closeCustomAlert() {
+           document.getElementById(‘customAlertPopup’).classList.add(‘hidden’);
+      if (
+          document.getElementById('customAlertMessage').textContent ===
+          '로그아웃 되었습니다.'
+        ) {
+          window.location.href = '/';
+        }
+        else (
         location.reload();
-      }
-      // flatpickr 초기화
-      flatpickr('#calendar', {
-        defaultDate: new Date(),
-        dateFormat: 'Y-m-d',
-        locale: 'ko',
-        inline: true,
-        disableMobile: true,
-        minDate: 'today',
-        onChange: function (selectedDates, dateStr) {
-          if (selectedDates.length > 0) {
-            updateTimeDropdownFromDB(dateStr);
-          }
-        },
-      });
+        )
 
-      document
-        .getElementById('recruitButton')
-        .addEventListener('click', function () {
-          // 폼 요소 값 읽기
-          const timeStart = document.getElementById('timeStart').value;
-          const timeEnd = document.getElementById('timeEnd').value;
-          const memo = document.getElementById('memo').value;
-          const maxPlayers = document.getElementById('maxPlayers').value;
-          const courtType = document.querySelector(
-            'input[name="court"]:checked'
-          ).value;
+          }
 
-          // flatpickr 캘린더에서 선택한 날짜
-          const calendarInstance =
-            document.getElementById('calendar')._flatpickr;
-          if (
-            !calendarInstance ||
-            calendarInstance.selectedDates.length === 0
-          ) {
-            alert('날짜를 선택하세요!');
-            return;
-          }
-          const selectedDate = calendarInstance.selectedDates[0];
-          const dateStr = calendarInstance.formatDate(selectedDate, 'Y-m-d');
 
-          const token = localStorage.getItem('token');
-          if (!token) {
-            alert('로그인이 필요합니다!');
-            return;
-          }
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const creator_id = payload.user_id; // creator_id
-
-          const matchData = {
-            creator_id: creator_id,
-            memo: memo,
-            date: dateStr,
-            time_start: timeStart,
-            time_end: timeEnd,
-            court_type: courtType,
-            max_players: maxPlayers,
-          };
-
-          fetch('/create_match', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(matchData),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.match_id) {
-                alert('모집 등록 성공!');
-                // 예약 생성 후 예약 현황 페이지로 리다이렉트
-                window.location.href = '/';
-              } else {
-                alert('등록 실패: ' + data.message);
+            // JWT 토큰 확인 후 네비게이션 버튼 상태 변경
+            document.addEventListener('DOMContentLoaded', function () {
+              const token = localStorage.getItem('token');
+              if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const username = payload.username;
+                document.getElementById(
+                  'username-display'
+                ).textContent = `${username}님!`;
+                document.getElementById('guest-buttons').classList.add('hidden');
+                document.getElementById('user-buttons').classList.remove('hidden');
               }
-            })
-            .catch((error) => {
-              console.error('에러:', error);
-              alert('등록 중 에러 발생');
             });
-        });
 
-      // 시작 시간 변경 시 종료 시간을 자동으로 1시간 뒤로 설정
-      // 시작시간 변경 시 종료시간 옵션 업데이트 (종료시간은 시작시간 +1, +2시간으로 계산; 24시 넘어도 그대로 표시)
-      document
-        .getElementById('timeStart')
-        .addEventListener('change', function () {
-          const selectedStart = this.value; // 예: "23:00"
-          const [hour, minute] = selectedStart.split(':').map(Number);
-
-          // 종료시간 옵션 계산: 1시간 뒤, 2시간 뒤
-          const option1Hour = hour + 1;
-          const option2Hour = hour + 2;
-
-          // 항상 그대로 표시 (예: 25:00, 26:00 등)
-          const formatTime = (hr, min) => {
-            return `${String(hr).padStart(2, '0')}:${String(min).padStart(
-              2,
-              '0'
-            )}`;
-          };
-
-          const formattedOption1 = formatTime(option1Hour, minute);
-          const formattedOption2 = formatTime(option2Hour, minute);
-
-          // 종료시간 select 요소 업데이트
-          const timeEndSelect = document.getElementById('timeEnd');
-          timeEndSelect.innerHTML = ''; // 기존 옵션 삭제
-
-          const opt1 = document.createElement('option');
-          opt1.value = formattedOption1;
-          opt1.text = formattedOption1;
-          timeEndSelect.appendChild(opt1);
-
-          const opt2 = document.createElement('option');
-          opt2.value = formattedOption2;
-          opt2.text = formattedOption2;
-          timeEndSelect.appendChild(opt2);
-        });
-
-      // 페이지 로드시 기본 날짜(오늘)에 대해 updateTimeDropdownFromDB 호출
-      document.addEventListener('DOMContentLoaded', function () {
-        const calendarInstance = document.getElementById('calendar')._flatpickr;
-        if (calendarInstance && calendarInstance.selectedDates.length > 0) {
-          const dateStr = calendarInstance.formatDate(
-            calendarInstance.selectedDates[0],
-            'Y-m-d'
-          );
-          updateTimeDropdownFromDB(dateStr);
-        }
-      });
-
-      // 예약된 시작 시간을 DB에서 조회하여 드롭다운 업데이트 함수
-      function updateTimeDropdownFromDB(dateStr) {
-        fetch(`/reserved_times?date=${dateStr}`)
-          .then((response) => response.json())
-          .then((data) => {
-            const reserved = data.reserved || [];
-            const timeStartSelect = document.getElementById('timeStart');
-            const today = new Date();
-            // 로컬 날짜를 YYYY-MM-DD 형식으로 생성
-            const todayStr = `${today.getFullYear()}-${String(
-              today.getMonth() + 1
-            ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-            const now = new Date();
-            const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-            for (let option of timeStartSelect.options) {
-              let disable = false;
-              // 예약되어 있는 시간이면 disable
-              if (reserved.includes(option.value)) {
-                disable = true;
-              }
-              // 당일 예약 시, 현재시간보다 이전 옵션 disable
-              if (dateStr === todayStr) {
-                const [optionHour, optionMinute] = option.value
-                  .split(':')
-                  .map(Number);
-                const optionMinutes = optionHour * 60 + optionMinute;
-                if (optionMinutes <= currentMinutes) {
-                  disable = true;
-                }
-              }
-              option.disabled = disable;
-              option.style.display = disable ? 'none' : 'block';
+            function logout() {
+              localStorage.removeItem('token');
+              showCustomAlert('로그아웃 되었습니다!')
             }
-          })
-          .catch((err) => {
-            console.error('예약된 시간 조회 실패:', err);
-          });
-      }
+            // flatpickr 초기화
+            flatpickr('#calendar', {
+              defaultDate: new Date(),
+              dateFormat: 'Y-m-d',
+              locale: 'ko',
+              inline: true,
+              disableMobile: true,
+              minDate: 'today',
+              onChange: function (selectedDates, dateStr) {
+                if (selectedDates.length > 0) {
+                  updateTimeDropdownFromDB(dateStr);
+                }
+              },
+            });
+
+            document
+              .getElementById('recruitButton')
+              .addEventListener('click', function () {
+                // 폼 요소 값 읽기
+                const timeStart = document.getElementById('timeStart').value;
+                const timeEnd = document.getElementById('timeEnd').value;
+                const memo = document.getElementById('memo').value;
+                const maxPlayers = document.getElementById('maxPlayers').value;
+                const courtType = document.querySelector(
+                  'input[name="court"]:checked'
+                ).value;
+
+                // flatpickr 캘린더에서 선택한 날짜
+                const calendarInstance =
+                  document.getElementById('calendar')._flatpickr;
+                if (
+                  !calendarInstance ||
+                  calendarInstance.selectedDates.length === 0
+                ) {
+
+                  showCustomAlert('날짜를 선택하세요!');
+                  return;
+                }
+                const selectedDate = calendarInstance.selectedDates[0];
+                const dateStr = calendarInstance.formatDate(selectedDate, 'Y-m-d');
+
+                const token = localStorage.getItem('token');
+                if (!token) {
+                  showCustomAlert('로그인이 필요합니다!');
+                  return;
+                }
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const creator_id = payload.user_id; // creator_id
+
+                const matchData = {
+                  creator_id: creator_id,
+                  memo: memo,
+                  date: dateStr,
+                  time_start: timeStart,
+                  time_end: timeEnd,
+                  court_type: courtType,
+                  max_players: maxPlayers,
+                };
+
+                fetch('/create_match', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(matchData),
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    if (data.match_id) {
+                      showCustomAlert('모집 등록 성공!');
+                      // 예약 생성 후 예약 현황 페이지로 리다이렉트
+                      window.location.href = '/';
+                    } else {
+                      showCustomAlert('등록 실패: ' + data.message);
+                    }
+                  })
+                  .catch((error) => {
+                    console.error('에러:', error);
+                    showCustomAlert('등록 중 에러 발생');
+                  });
+              });
+
+            // 시작 시간 변경 시 종료 시간을 자동으로 1시간 뒤로 설정
+            // 시작시간 변경 시 종료시간 옵션 업데이트 (종료시간은 시작시간 +1, +2시간으로 계산; 24시 넘어도 그대로 표시)
+            document
+              .getElementById('timeStart')
+              .addEventListener('change', function () {
+                const selectedStart = this.value; // 예: "23:00"
+                const [hour, minute] = selectedStart.split(':').map(Number);
+
+                // 종료시간 옵션 계산: 1시간 뒤, 2시간 뒤
+                const option1Hour = hour + 1;
+                const option2Hour = hour + 2;
+
+                // 항상 그대로 표시 (예: 25:00, 26:00 등)
+                const formatTime = (hr, min) => {
+                  return `${String(hr).padStart(2, '0')}:${String(min).padStart(
+                    2,
+                    '0'
+                  )}`;
+                };
+
+                const formattedOption1 = formatTime(option1Hour, minute);
+                const formattedOption2 = formatTime(option2Hour, minute);
+
+                // 종료시간 select 요소 업데이트
+                const timeEndSelect = document.getElementById('timeEnd');
+                timeEndSelect.innerHTML = ''; // 기존 옵션 삭제
+
+                const opt1 = document.createElement('option');
+                opt1.value = formattedOption1;
+                opt1.text = formattedOption1;
+                timeEndSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = formattedOption2;
+                opt2.text = formattedOption2;
+                timeEndSelect.appendChild(opt2);
+              });
+
+            // 페이지 로드시 기본 날짜(오늘)에 대해 updateTimeDropdownFromDB 호출
+            document.addEventListener('DOMContentLoaded', function () {
+              const calendarInstance = document.getElementById('calendar')._flatpickr;
+              if (calendarInstance && calendarInstance.selectedDates.length > 0) {
+                const dateStr = calendarInstance.formatDate(
+                  calendarInstance.selectedDates[0],
+                  'Y-m-d'
+                );
+                updateTimeDropdownFromDB(dateStr);
+              }
+            });
+
+            // 예약된 시작 시간을 DB에서 조회하여 드롭다운 업데이트 함수
+            function updateTimeDropdownFromDB(dateStr) {
+              fetch(`/reserved_times?date=${dateStr}`)
+                .then((response) => response.json())
+                .then((data) => {
+                  const reserved = data.reserved || [];
+                  const timeStartSelect = document.getElementById('timeStart');
+                  const today = new Date();
+                  // 로컬 날짜를 YYYY-MM-DD 형식으로 생성
+                  const todayStr = `${today.getFullYear()}-${String(
+                    today.getMonth() + 1
+                  ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                  const now = new Date();
+                  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+                  for (let option of timeStartSelect.options) {
+                    let disable = false;
+                    // 예약되어 있는 시간이면 disable
+                    if (reserved.includes(option.value)) {
+                      disable = true;
+                    }
+                    // 당일 예약 시, 현재시간보다 이전 옵션 disable
+                    if (dateStr === todayStr) {
+                      const [optionHour, optionMinute] = option.value
+                        .split(':')
+                        .map(Number);
+                      const optionMinutes = optionHour * 60 + optionMinute;
+                      if (optionMinutes <= currentMinutes) {
+                        disable = true;
+                      }
+                    }
+                    option.disabled = disable;
+                    option.style.display = disable ? 'none' : 'block';
+                  }
+                })
+                .catch((err) => {
+                  console.error('예약된 시간 조회 실패:', err);
+                });
+            }
     </script>
   </body>
 </html>
