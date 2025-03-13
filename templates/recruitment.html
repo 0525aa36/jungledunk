@@ -93,7 +93,6 @@
           <div class="flex space-x-2">
             <select id="timeStart" class="border rounded px-2 py-1 w-1/2">
               <option value="06:00">06:00</option>
-              <option value="06:00">06:00</option>
               <option value="06:30">06:30</option>
               <option value="07:00">07:00</option>
               <option value="07:30">07:30</option>
@@ -277,7 +276,7 @@
               if (data.match_id) {
                 alert('모집 등록 성공!');
                 // 예약 생성 후 예약 현황 페이지로 리다이렉트
-                window.location.href = '/reservations';
+                window.location.href = '/';
               } else {
                 alert('등록 실패: ' + data.message);
               }

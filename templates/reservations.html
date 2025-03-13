@@ -66,16 +66,14 @@
       <div id="reservations-container" class="mt-6 space-y-4">
         {% if reservations %} {% for res in reservations %} {% set match =
         res.match %}
-        <div
-          class="bg-white border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center"
-        >
+        <div class="border border-gray-300 shadow-md rounded-lg p-4 flex justify-between items-center {% if match.creator_id|string == current_user_id %}bg-yellow-300{% else %}bg-white{% endif %}">
+        
           <div class="w-1/4 text-left">
             <p class="text-sm text-gray-500">날짜: {{ match.date }}</p>
             <p class="text-lg font-semibold text-gray-800">
               {{ match.time_start }} ~ {{ match.time_end }}
             </p>
           </div>
-
           <div class="w-2/4 text-sm text-gray-700">
             <p>인원 : {{ match.current_players }}/{{ match.max_players }}</p>
             <p>#{{ match.court_type }} #{{ match.memo }}</p>
@@ -291,9 +289,6 @@
                   <a href="/player_list/${match._id}" class="bg-[#15857A] text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-[#106156] transition">
                     예약자 명단
                   </a>
-                  <button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-orange-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition">
-                    취소하기
-                  </button>
                 `
                 : `
                   <button onclick="openCancelPopup('${match._id}', '${res.reservation_id}')" class="bg-red-500 text-white w-full text-center px-4 py-2 text-sm rounded-lg hover:bg-red-600 transition mx-auto block">
