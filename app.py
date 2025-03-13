@@ -11,7 +11,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)  # 24바이트의 랜덤한 값 생성
 
 # MongoDB 연결 (MongoDB 서버가 로컬에서 실행 중이어야 함)
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://test:test@13.60.204.191',27017)
+#client = MongoClient('mongodb://localhost:27017/')
 db = client['user_database']
 users_collection = db['users'] 
 matches_collection = db['matches']
