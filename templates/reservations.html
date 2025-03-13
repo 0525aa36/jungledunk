@@ -411,6 +411,7 @@
 
       function closeConfirmPopup() {
         document.getElementById('confirmPopup').classList.add('hidden');
+        location.reload();
       }
 
       function showCustomAlert(message) {
@@ -420,6 +421,13 @@
 
       function closeCustomAlert() {
         document.getElementById('customAlertPopup').classList.add('hidden');
+        // 알림 메시지가 "로그아웃 되었습니다."라면 새로고침합니다.
+        if (
+          document.getElementById('customAlertMessage').textContent ===
+          '로그아웃 되었습니다.'
+        ) {
+          window.location.href = '/';
+        }
       }
     </script>
 </body>
